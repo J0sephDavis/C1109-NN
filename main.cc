@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <ctime>
+#include <stdexcept>
 #include <vector>
 #include <iostream>
 #include <memory> //unique_ptr
@@ -20,26 +21,29 @@ class perceptron {
 			return activation(weighted_sum);
 		};
 		virtual int activation(int input) {
+			//passthrough
+			return input;
+		}
+		std::vector<int> weights;
+		//how to store activation function? hardcode within calculate() for now?
+};
+class sign_perceptron : public perceptron {
+	public:
+		sign_perceptron(int count_inputs) : perceptron(count_inputs) {
+			//
+		}
+		int activation(int input) override {
 			//sign activation function
 			const int threshold = 0;
 			if (input < threshold) return -1;
 			if (input == threshold) return 0;
 			else return 1;
-
-		}
-		std::vector<int> weights;
-		//how to store activation function? hardcode within calculate() for now?
-};
-class output_perceptron : public perceptron {
-	public:
-		output_perceptron(int count_inputs) : perceptron(count_inputs) {
-			//
-		}
-		int activation(int input) override {
-			return input;
 		}
 };
-
+enum activation_type {
+	passthrough,
+	sign
+};
 //a layer of perceptrons
 class layer {
 	public:
@@ -48,17 +52,17 @@ class layer {
 		 * input_width - number of neurons in previous layer.
 		 * 	The accepted number of inputs for this layer.
 		 */
-		layer(int width, int input_width, bool is_output) {
+		layer(int width, int input_width, activation_type type = sign) {
 			this->width = width;
 			this->input_width = input_width;
-			
-			if (is_output) for (int i = 0; i < width; i++) {
-				std::cout << "create output_perceptron\n";
-				neurons.emplace_back(new output_perceptron(input_width));
-			}
-			else for (int i = 0; i < width; i++) {
+
+			if (type == passthrough) for (int i = 0; i < width; i++) {
 				neurons.emplace_back(new perceptron(input_width));
 			}
+			else if (type == sign) for (int i = 0; i < width; i++) {
+				neurons.emplace_back(new sign_perceptron(input_width));
+			}
+			else throw std::runtime_error("INVALID ACTIVATION TYPE");
 		};
 		std::vector<int> output(std::vector<int> input) {
 			std::vector<int> out = {};
@@ -77,14 +81,14 @@ int main(void) {
 	std::srand(time(NULL));
 	//preparations
 	const int width = 2;
-	const int depth = 4;
+	const int depth = 2;
 	std::vector<int> input = {0,1}; //total inputs must == width
 	//generate
 	std::vector<layer> layers; //0 = input, last is output
 	for (int i = 0; i < depth-1; i++) {
-		layers.emplace_back(layer(width,width, false));
+		layers.emplace_back(layer(width,width, sign));
 	}
-	layers.emplace_back(layer(1, width,true)); //single output node
+	layers.emplace_back(layer(1, width, passthrough)); //single output node
 	//output
 	std::vector<std::vector<int>> outputs;
 	outputs.push_back(layers[0].output(input));
