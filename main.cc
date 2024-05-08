@@ -1,17 +1,15 @@
+#include <cstdlib>
+#include <ctime>
 #include <vector>
 #include <iostream>
-
-//stand-in as a generic activation function
-int activation_function(int input) {
-	return input;
-}
+#include <memory> //unique_ptr
 
 //a single perceptron
 class perceptron {
 	public:
 		perceptron(int count_inputs) {
 			for (int i = 0; i < count_inputs; i++) {
-				weights.push_back(1); //make this random
+				weights.push_back((std::rand()% 10) - 4);
 			}
 		}
 		int calculate(const std::vector<int> input) {
@@ -19,11 +17,27 @@ class perceptron {
 			for (size_t i = 0; i < input.size(); i++) {
 				weighted_sum += input[i] * weights[i];
 			}
-			//
-			return activation_function(weighted_sum);
+			return activation(weighted_sum);
 		};
+		virtual int activation(int input) {
+			//sign activation function
+			const int threshold = 0;
+			if (input < threshold) return -1;
+			if (input == threshold) return 0;
+			else return 1;
+
+		}
 		std::vector<int> weights;
 		//how to store activation function? hardcode within calculate() for now?
+};
+class output_perceptron : public perceptron {
+	public:
+		output_perceptron(int count_inputs) : perceptron(count_inputs) {
+			//
+		}
+		int activation(int input) override {
+			return input;
+		}
 };
 
 //a layer of perceptrons
@@ -34,28 +48,33 @@ class layer {
 		 * input_width - number of neurons in previous layer.
 		 * 	The accepted number of inputs for this layer.
 		 */
-		layer(int width, int input_width) {
+		layer(int width, int input_width, bool is_output) {
 			this->width = width;
 			this->input_width = input_width;
-
-			for (int i = 0; i < width; i++) {
-				neurons.push_back(perceptron(input_width));
+			
+			if (is_output) for (int i = 0; i < width; i++) {
+				std::cout << "create output_perceptron\n";
+				neurons.emplace_back(new output_perceptron(input_width));
+			}
+			else for (int i = 0; i < width; i++) {
+				neurons.emplace_back(new perceptron(input_width));
 			}
 		};
 		std::vector<int> output(std::vector<int> input) {
 			std::vector<int> out = {};
 			for (size_t i = 0; i < neurons.size(); i++) {
-				out.push_back(neurons[i].calculate(input));
+				out.push_back(neurons[i]->calculate(input));
 			}
 			return std::move(out);
 		}
 		//overload to allow accessing each neuron using [index]?
-		std::vector<perceptron> neurons;
+		std::vector<std::unique_ptr<perceptron>> neurons;
 		int width; //neurons in layer
 		int input_width; //inputs to layer
 };
 
 int main(void) {
+	std::srand(time(NULL));
 	//preparations
 	const int width = 2;
 	const int depth = 4;
@@ -63,9 +82,9 @@ int main(void) {
 	//generate
 	std::vector<layer> layers; //0 = input, last is output
 	for (int i = 0; i < depth-1; i++) {
-		layers.emplace_back(layer(width,width));
+		layers.emplace_back(layer(width,width, false));
 	}
-	layers.emplace_back(layer(1, width));
+	layers.emplace_back(layer(1, width,true)); //single output node
 	//output
 	std::vector<std::vector<int>> outputs;
 	outputs.push_back(layers[0].output(input));
@@ -91,7 +110,7 @@ int main(void) {
 		for (int j = 0; j < layer_width; j++) { //for-each neuron
 			std::cout << "neuron[" << j << "]: w{";
 			for (int k = 0; k < input_width; k++) { //print weights
-				std::cout << L->neurons[j].weights[k] << ",";
+				std::cout << L->neurons[j]->weights[k] << ",";
 			}
 			std::cout << "}\n";
 		}
