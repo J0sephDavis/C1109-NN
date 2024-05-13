@@ -136,22 +136,21 @@ public:
 			outputs.emplace_back(layers[i].output(outputs[i-1]));
 		}
 		//display
-		std::cout << "Target: ";
+		std::cout << "Target:\t";
 		for (auto& t : target) std::cout << t << ",";
-		std::cout << "\nIn: ";
+		std::cout << "\nIn:\t";
 		for (auto& i : input) std::cout << i << ",";
 		for (int j = 0; j < depth; j++) {
 			if (j+1 == depth)
-				std::cout << "\nOut: ";
+				std::cout << "\nOut:\t";
 			else
-				std::cout << "\n" << j << ": ";
+				std::cout << "\n" << j << ":\t";
 			for (auto& o : outputs[j]) std::cout << o << ",";
 		}
 		//calc error & display
 		std::cout << "\nERROR = ";
 		for (int x = 0; x < layers[depth-1].width; x++) {
-			std::cout << target[x]-outputs[depth-1][x];
-			std::cout << ",";
+			std::cout << target[x]-outputs[depth-1][x] << ",";
 		}
 		std::cout << "\n";
 
