@@ -159,7 +159,11 @@ int main(void) {
 		if (error_strength == 0) {
 			std::cout << "no error. Stop.\n";
 		}
-		//d_pj = (t_pj - o_pj) * o_pi * (1-o_pj)
+		//d_pj = (t_pj - o_pj) * f'(z_pj)
+		//t_pj - target output
+		//o_pj - actual output (in this case of the output node)
+		//z_pj - weighted sum of inputs
+		//derivative of logistic = f(x)(1-f(x))
 		neuron->error_contribution = error_contribution;
 		//DELTA RULE
 		for (size_t weight_index = 0;
