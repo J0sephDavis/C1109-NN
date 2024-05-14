@@ -95,9 +95,9 @@ public:
 	}
 	//compute output of network given input
 	std::vector<std::vector<float>> compute(std::vector<float> input) {
-		std::cout << "INPUT: ";
+		std::cout << "INPUT\t";
 		for (auto x : input)
-			std::cout << x << ",";
+			std::cout << x << ", ";
 		std::cout << "\n";
 		std::vector<std::vector<float>> outputs;
 		outputs.push_back(layers[0].output(input));
@@ -106,22 +106,28 @@ public:
 		}
 		//interpret
 		for (int i = 0; i < depth; i++) { //for-each layer
-			std::cout <<  "Layer[" << i << "]->";
+			std::cout <<  "#L-" << i << " OUTPUT\t";
 			layer *L = &layers[i];
 			int layer_width = L->width;
 			int input_width = L->input_width;
 			//Output vector
 			for (int k = 0; k < layer_width; k++) { //print output
-				std::cout << outputs[i][k] << ",";
+				std::cout << outputs[i][k] << ", ";
+				if(layer_width > 4 && (k-1)%3 == 0)
+					std::cout << "\n\t";
 			}
-			std::cout << "\n";
+			std::cout << "]\n";
 			//Neuron weights
 			for (int j = 0; j < layer_width; j++) { //for-each neuron
-				std::cout << "neuron[" << j << "]: w{";
+				std::cout << "*N-" << j << " w[]  ";
 				for (int k = 0; k < input_width; k++) { //print weights
-					std::cout << L->neurons[j]->weights[k] << ",";
+					std::cout << L->neurons[j]->weights[k] << ", ";
+					if (layer_width > 4 && k>4 && (k+1)%6 == 0) {
+						std::cout << "(k=" << k << ")";
+						std::cout << "\n\t";
+					}
 				}
-				std::cout << "}\n";
+				std::cout << "\n";
 			}
 		}
 		return std::move(outputs);
@@ -133,7 +139,7 @@ public:
 int main(void) {
 	//preparations
 	std::srand(time(NULL));
-	const int width = 6;
+	const int width = 7;
 	const int depth = 3;
 	const std::vector<float> inputs = {1,1};
 	const std::vector<float> expected_output = {1.0};
@@ -203,7 +209,6 @@ int main(void) {
 			std::cout << "sum_k:\t" << associated_error << "\n";
 			neuron->error_contribution = associated_error * derivative; //d_pk
 			std::cout << "d_pk:\t" << neuron->error_contribution << "\n";
-			std::cout << "WEIGHT COUNT:" << neuron->weights.size() << "\n";
 			for (size_t l = 0; l <= neuron->weights.size()-1;l++) {
 
 				float input_value = input_values[l];
