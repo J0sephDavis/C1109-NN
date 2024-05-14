@@ -122,7 +122,7 @@ public:
 				std::cout << "*N-" << j << " w[]  ";
 				for (int k = 0; k < input_width; k++) { //print weights
 					std::cout << L->neurons[j]->weights[k] << ", ";
-					if (layer_width > 4 && k>4 && (k+1)%6 == 0) {
+					if (k>4 && (k+1)%6 == 0) {
 						std::cout << "(k=" << k << ")";
 						std::cout << "\n\t";
 					}
