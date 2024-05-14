@@ -147,15 +147,16 @@ int main(void) {
 	std::vector<std::vector<float>> output = n.compute(inputs);
 
 	//get error contribution of output nodes
-	for (size_t i = 0; i < output.back().size(); i++){
-		std::cout << "== OUTPUT GRADIENT\n";
-		auto& neuron = n.layers.back().neurons.at(i);
-		float error_strength = expected_output.at(i) - neuron->output;
+	for (size_t output_index = 0; output_index < output.back().size();
+			output_index++){
+		std::cout << "#OUTPUT GRADIENT\n";
+		auto& neuron = n.layers.back().neurons.at(output_index);
+		float error_strength = expected_output.at(output_index) - neuron->output;
 		float derivative = (neuron->output * (1-neuron->output));
 
-		float error_contribution = error_strength * derivative;
+		neuron->error_contribution = error_strength * derivative;
 		std::cout << "(target - actual output)\t" << error_strength
-		<< "\nd=(t-o)f'(z)\t" << error_contribution << "\n";
+		<< "\nd=(t-o)f'(z)\t" << neuron->error_contribution << "\n";
 		if (error_strength == 0) {
 			std::cout << "no error. Stop.\n";
 		}
@@ -164,29 +165,32 @@ int main(void) {
 		//o_pj - actual output (in this case of the output node)
 		//z_pj - weighted sum of inputs
 		//derivative of logistic = f(x)(1-f(x))
-		neuron->error_contribution = error_contribution;
-		//DELTA RULE
+		
+		//DELTA RULE - the change in weight (from neuron u_i to u_j) is
+		//  equal to -1 * learning rate, multiplied by
+		//  error contribution (d_pj) then multiplied by the output of
+		//  neuron-i (u_i)
 		for (size_t weight_index = 0;
 				weight_index < neuron->weights.size()-1;
 				weight_index++) {
-			std::cout << "w_" << weight_index << "\t"
+			std::cout << "W-" << weight_index << " "
 				<< neuron->weights.at(weight_index) << "\n";
 			auto& input_neuron = n.layers.at(n.layers.size()-2).neurons.at(weight_index);
-			float delta_rule = -learning_rate * error_contribution * input_neuron->output;
-			std::cout << "delta W\t"
-				<< delta_rule << "\n";
+			float delta_rule = -learning_rate * neuron->error_contribution * input_neuron->output;
+			std::cout << "delta\t" << delta_rule << "\n";
 			neuron->weights.at(weight_index) = neuron->weights.at(weight_index) + delta_rule;
 
 		}
 	}
 	for (int i = n.layers.size()-2; i >= 0; i--) {
-		std::cout << "==\nLayer-" << i << "\n";
+		std::cout << "#L-" << i << "\n";
+
 		auto& layer = n.layers.at(i);
 		auto& upper_layer = n.layers.at(i+1);
 		std::vector<float> input_values = {};
-		if (i == 0) {
-			input_values = inputs;
-		}
+
+		if (i == 0)
+			input_values = inputs; //the output of each u_i / o_pi
 		else {
 			for (size_t a = 0; a < n.layers.at(i-1).neurons.size()-1; a++) {
 				auto& tmp = n.layers.at(i-1).neurons.at(a);
