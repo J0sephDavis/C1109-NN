@@ -175,10 +175,14 @@ int main(void) {
 				weight_index++) {
 			std::cout << "W-" << weight_index << " "
 				<< neuron->weights.at(weight_index) << "\n";
-			auto& input_neuron = n.layers.at(n.layers.size()-2).neurons.at(weight_index);
-			float delta_rule = -learning_rate * neuron->error_contribution * input_neuron->output;
-			std::cout << "delta\t" << delta_rule << "\n";
-			neuron->weights.at(weight_index) = neuron->weights.at(weight_index) + delta_rule;
+			auto& input_neuron = n.layers.at(n.layers.size()-2)
+				.neurons.at(weight_index);
+			float delta_weight = -learning_rate * 	//-learning rate
+				neuron->error_contribution * 	//d_pj
+				input_neuron->output; 		//o_pi
+			std::cout << "delta\t" << delta_weight << "\n";
+			neuron->weights.at(weight_index) = neuron->weights
+				.at(weight_index) + delta_weight; // w + dW
 
 		}
 	}
