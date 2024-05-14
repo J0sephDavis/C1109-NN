@@ -146,16 +146,19 @@ int main(void) {
 	network n(inputs.size(), width,depth); //the network
 	std::vector<std::vector<float>> output = n.compute(inputs);
 
-	std::cout << "compute gradient\n";
 	//get error contribution of output nodes
 	for (size_t i = 0; i < output.back().size(); i++){
-		std::cout << "==\n";
+		std::cout << "== OUTPUT GRADIENT\n";
 		auto& neuron = n.layers.back().neurons.at(i);
-		float error_signal = expected_output.at(i) - neuron->output;
+		float error_strength = expected_output.at(i) - neuron->output;
 		float derivative = (neuron->output * (1-neuron->output));
-		float error_contribution = error_signal * derivative;
-		std::cout << "output error/contrib: " << error_signal << "/"
-			<< error_contribution << "\n";
+
+		float error_contribution = error_strength * derivative;
+		std::cout << "(target - actual output)\t" << error_strength
+		<< "\nd=(t-o)f'(z)\t" << error_contribution << "\n";
+		if (error_strength == 0) {
+			std::cout << "no error. Stop.\n";
+		}
 		//d_pj = (t_pj - o_pj) * o_pi * (1-o_pj)
 		neuron->error_contribution = error_contribution;
 		//DELTA RULE
