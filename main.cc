@@ -1,4 +1,4 @@
-//#define PRINT_TRAINING
+#define PRINT_TRAINING
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -13,10 +13,10 @@ class perceptron {
 	public:
 		perceptron(int count_inputs) {
 			for (int i = 0; i < count_inputs; i++) {
-				weights.push_back((std::rand()% 20 + 1)*0.05);
+				weights.push_back((std::rand()% 20 -9)*0.05);
 			}
 		}
-		float calculate(const std::vector<float> input) {
+		virtual float calculate(const std::vector<float> input) {
 			for (size_t i = 0; i < input.size(); i++) {
 				weighted_sum += input[i] * weights[i];
 			}
@@ -49,8 +49,10 @@ class perceptron {
 				float delta_weight = -learning_rate *
 					error_contribution *
 					input[weight_index];
-				weights.at(weight_index) = 
-					weights.at(weight_index) + delta_weight;
+				weights.at(weight_index) += delta_weight;
+#ifdef PRINT_TRAINING
+				std::cout << "dw:" << delta_weight << ", ";
+#endif
 			}
 		}
 		std::vector<float> weights;
@@ -59,8 +61,20 @@ class perceptron {
 		float output = 0.0; //the last output of this node.
 		float derivative = 0;
 };
+class bias_perceptron : public perceptron {
+public:
+	bias_perceptron() : perceptron(0) {
+		derivative = 1;
+		output = 1;
+	}
+	virtual void train(float learning_rate, std::vector<float> input) {
+		(void)learning_rate;
+		(void)input;
+	}
+};
 enum perceptron_type {
 	logistic,
+	bias,
 };
 //a layer of perceptrons
 class layer {
@@ -226,7 +240,7 @@ int main(void) {
 	//preparations
 	std::srand(time(NULL));
 	const int width = 2;
-	const int depth = 3;
+	const int depth = 2;
 	network n(2, width,depth); //the network
 	//show weights before
 	n.revealWeights();
@@ -250,8 +264,8 @@ int main(void) {
 	}
 	std::cout << "train?";
 	getchar();
-#define EPOCH 1000
-#define MILLENIUM 100
+#define EPOCH 1
+#define MILLENIUM 1
 	for (size_t cent = 0; cent < MILLENIUM; cent++) {
 		for (size_t year = 0; year < EPOCH; year++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
@@ -262,7 +276,7 @@ int main(void) {
 //		n.revealWeights();
 //		getchar();
 	}
-	std::cout << "\n\nafter";
+	std::cout << "after";
 	n.revealWeights();
 	for (size_t i = 0; i < tests.size(); i++){
 		std::cout << "T:[";
