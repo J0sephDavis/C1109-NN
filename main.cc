@@ -11,7 +11,7 @@ class perceptron {
 	public:
 		perceptron(int count_inputs) {
 			for (int i = 0; i < count_inputs; i++) {
-				weights.push_back((std::rand()% 4 + 1));
+				weights.push_back((std::rand()% 4 + 1)*0.25);
 			}
 		}
 		float calculate(const std::vector<float> input) {
@@ -37,7 +37,7 @@ class perceptron {
 			//  neuron-i (u_i)
 			for (size_t weight_index = 0;
 					weight_index < weights.size()-1;
-		256weight_index++) {
+					weight_index++) {
 				float delta_weight = -learning_rate *
 					error_contribution *
 					input[weight_index];
