@@ -11,9 +11,12 @@
 //a single perceptron - logistic
 class perceptron {
 	public:
-		perceptron(int count_inputs) {
-			for (int i = 0; i < count_inputs; i++) {
+		perceptron(int count_inputs, bool rand_weights = true) {
+			if (rand_weights) for (int i = 0; i < count_inputs; i++) {
 				weights.push_back((std::rand()% 20 -9)*0.05);
+			}
+			else for (int i = 0; i < count_inputs; i++) {
+				weights.push_back(1);
 			}
 		}
 		virtual float calculate(const std::vector<float> input) {
@@ -31,7 +34,7 @@ class perceptron {
 			derivative = output * (1 - output);
 			return output;
 		}
-		void revealWeights() {
+		virtual void revealWeights() {
 			for (auto& w : weights) {
 				std::cout << w << ",";
 			}
@@ -63,18 +66,31 @@ class perceptron {
 };
 class bias_perceptron : public perceptron {
 public:
-	bias_perceptron() : perceptron(0) {
-		derivative = 1;
-		output = 1;
+	bias_perceptron() : perceptron(1) {
+		//
 	}
-	virtual void train(float learning_rate, std::vector<float> input) {
-		(void)learning_rate;
+	float calculate(const std::vector<float> input) override {
 		(void)input;
+		output = 1;
+		return output;
+	}
+	void revealWeights() override {
+		std::cout << "bias.\n";
+	}
+};
+class pass_perceptron : public perceptron {
+public:
+	pass_perceptron(size_t input_width) : perceptron(input_width, false) {
+		derivative = 1; //TODO prove
+	}
+	float calculate(const std::vector<float> input) override {
+		return input[0]; //passthrough. This will take special consideration when passing input
 	}
 };
 enum perceptron_type {
 	logistic,
 	bias,
+	passthrough
 };
 //a layer of perceptrons
 class layer {
@@ -84,12 +100,23 @@ public:
 	 * input_width - number of neurons in previous layer.
 	 * 	The accepted number of inputs for this layer.
 	 */
-	layer(int width, int input_width, perceptron_type type = logistic) {
-		this->width = width;
+	layer(size_t width, size_t input_width, size_t bias_neurons,
+			perceptron_type type = logistic) {
+		this->width = width+bias_neurons;
 		this->input_width = input_width;
-
-		if (type == logistic) for (int i = 0; i < width; i++) {
+		this->bias_neurons = bias_neurons;
+		std::cout << "Layer_iw:\t" << input_width << "\n";
+		size_t neuron_index = 0;
+		for (; neuron_index < bias_neurons; neuron_index++) {
+			neurons.emplace_back(new bias_perceptron());
+		}
+		if (type == logistic) for (; neuron_index < width;
+				neuron_index++) {
 			neurons.emplace_back(new perceptron(input_width));
+		}
+		else if (type == passthrough) for (; neuron_index < width;
+				neuron_index++) {
+			neurons.emplace_back(new pass_perceptron(input_width));
 		}
 		else throw std::runtime_error("INVALID ACTIVATION TYPE");
 	};
@@ -115,7 +142,7 @@ public:
 		//==Caclulate 2nd half of error equation - SUM_k (d_pk * w_kj==
 			float associated_error = 0;
 			for (size_t k = 0; k < upper_layer->neurons.size(); k++) {
-				auto& uppper_neuron = upper_layer->neurons.at(k);
+				auto& uppper_neuron = upper_layer->neurons.at(k+bias_neurons);
 				//d_pk * w_kj
 				associated_error += uppper_neuron
 					->error_contribution * uppper_neuron
@@ -133,13 +160,16 @@ public:
 		}
 	}
 	std::vector<std::unique_ptr<perceptron>> neurons;
-	int width; //neurons in layer
-	int input_width; //inputs to layer. 0 ifeq input layer.
+	size_t width; //neurons in layer
+	size_t input_width; //inputs to layer. 0 ifeq input layer.
+	size_t bias_neurons;
 };
 class output_layer : public layer {
 public:
+	/* No bias neuron on this layer
+	 * */
 	output_layer(int width, int input_width, perceptron_type type = logistic)
-		: layer(width,input_width,type){
+		: layer(width,input_width,0,type){
 		//
 	}
 	void train(std::vector<float> input, std::vector<float> label,
@@ -167,17 +197,64 @@ public:
 		}
 	}
 };
+class input_layer : public layer {
+public:
+	input_layer(size_t input_width, perceptron_type = passthrough) :
+		layer(input_width, input_width, 1) {
+		//
+	};
+	std::vector<float> output(std::vector<float> input) {
+		std::vector<float> out = {};
+		for (size_t i = 0; i < neurons.size(); i++) {
+			out.push_back(neurons[i]->calculate(input));
+		}
+		return std::move(out);
+	}
+	/*layer::train()
+	 * Computes error contribution/strength for each neuron in the layer,
+	 * due to the layer they feed into.
+	 * Calls the perceptrons training function. */
+	virtual void train(std::vector<float> input, std::vector<float> label,
+			const float learning_rate,
+			std::shared_ptr<layer> upper_layer) {
+		(void)label; //unused variable warning
+
+		for (size_t u_j = 0; u_j < neurons.size(); u_j++) {
+			//d_pj = f_j'(z_pj) * SUM_k (d_pk * w_kj)
+			auto& neuron = neurons.at(u_j);
+		//==Caclulate 2nd half of error equation - SUM_k (d_pk * w_kj==
+			float associated_error = 0;
+			for (size_t k = 0; k < upper_layer->neurons.size(); k++) {
+				auto& uppper_neuron = upper_layer->neurons.at(k+bias_neurons);
+				//d_pk * w_kj
+				associated_error += uppper_neuron
+					->error_contribution * uppper_neuron
+					->weights.at(u_j);
+			}
+			neuron->error_contribution = associated_error
+				* neuron->derivative; //d_pk
+#ifdef PRINT_TRAINING
+			std::cout << "N-" << u_j << " d: "
+				<< neuron->error_contribution << ", w: "; 
+			neuron->revealWeights();
+#endif
+
+			neuron->train(learning_rate, (input));
+		}
+	}
+};
 class network {
 public:
-	network(int input_width, int width, int depth) {
-		this->depth = depth;
-		this->width = width;
+	network(int input_width, int _width, int _depth) {
+		this->depth = _depth;
+		this->width = _width;
 		//generate
 		layers.emplace_back(new layer(width,input_width, logistic));
 		for (int i = 1; i < depth-1; i++) {
-			layers.emplace_back(new layer(width,width, logistic));
+//layer(size_t width, size_t input_width, perceptron_type type = logistic)
+			layers.emplace_back(new layer(width, layers[i-1]->width,						logistic));
 		}
-		layers.emplace_back(new output_layer(1, width, logistic)); //single output node
+		layers.emplace_back(new output_layer(1, layers[depth-2]->width, logistic)); //single output node
 	}
 	//compute output of network given input
 	std::vector<std::vector<float>> compute(std::vector<float> input) {
@@ -191,7 +268,7 @@ public:
 	void revealWeights() {
 		for (int lid = layers.size()-1; lid >= 0; lid--) {
 			std::cout << "\nLayer " << lid << ":\n========\nWeights\t|";
-			for (int a = 0; a < layers.at(lid)->input_width; a++)
+			for (size_t a = 0; a < layers.at(lid)->input_width; a++)
 				std::cout << a << "\t";
 			for (int nid = layers.at(lid)->neurons.size()-1;
 					nid >= 0; nid--) {
@@ -264,8 +341,8 @@ int main(void) {
 	}
 	std::cout << "train?";
 	getchar();
-#define EPOCH 1
-#define MILLENIUM 1
+#define EPOCH 64
+#define MILLENIUM 4
 	for (size_t cent = 0; cent < MILLENIUM; cent++) {
 		for (size_t year = 0; year < EPOCH; year++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
