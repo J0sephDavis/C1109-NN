@@ -6,7 +6,7 @@
 #include <memory> //unique_ptr
 #include <math.h>
 
-//a single perceptron
+//a single perceptron - logistic
 class perceptron {
 	public:
 		perceptron(int count_inputs) {
@@ -37,7 +37,7 @@ class perceptron {
 			//  neuron-i (u_i)
 			for (size_t weight_index = 0;
 					weight_index < weights.size()-1;
-					weight_index++) {
+		256weight_index++) {
 				float delta_weight = -learning_rate *
 					error_contribution *
 					input[weight_index];
@@ -51,22 +51,8 @@ class perceptron {
 		float output = 0.0; //the last output of this node.
 		float derivative = 0;
 };
-class sign_perceptron : public perceptron {
-	public:
-		sign_perceptron(int count_inputs) : perceptron(count_inputs) {
-			//
-		}
-		float activation(float input) override {
-			//sign activation function
-			const int threshold = 0;
-			if (input < threshold) return -1;
-			if (input == threshold) return 0;
-			else return 1;
-		}
-};
 enum activation_type {
-	passthrough,
-	sign
+	logistic,
 };
 //a layer of perceptrons
 class layer {
@@ -76,15 +62,11 @@ public:
 	 * input_width - number of neurons in previous layer.
 	 * 	The accepted number of inputs for this layer.
 	 */
-	layer(int width, int input_width, activation_type type = sign) {
+	layer(int width, int input_width, activation_type type = logistic) {
 		this->width = width;
 		this->input_width = input_width;
 
-		if (type == passthrough) for (int i = 0; i < width; i++) {
-			neurons.emplace_back(new perceptron(input_width));
-		}
-		else if (type == sign) for (int i = 0; i < width; i++) {
-			//neurons.emplace_back(new sign_perceptron(input_width));
+		if (type == logistic) for (int i = 0; i < width; i++) {
 			neurons.emplace_back(new perceptron(input_width));
 		}
 		else throw std::runtime_error("INVALID ACTIVATION TYPE");
@@ -132,7 +114,7 @@ public:
 };
 class output_layer : public layer {
 public:
-	output_layer(int width, int input_width, activation_type type = sign)
+	output_layer(int width, int input_width, activation_type type = logistic)
 		: layer(width,input_width,type){
 		//
 	}
@@ -173,11 +155,11 @@ public:
 		this->depth = depth;
 		this->width = width;
 		//generate
-		layers.emplace_back(new layer(width,input_width, sign));
+		layers.emplace_back(new layer(width,input_width, logistic));
 		for (int i = 1; i < depth-1; i++) {
-			layers.emplace_back(new layer(width,width, sign));
+			layers.emplace_back(new layer(width,width, logistic));
 		}
-		layers.emplace_back(new output_layer(1, width, passthrough)); //single output node
+		layers.emplace_back(new output_layer(1, width, logistic)); //single output node
 	}
 	//compute output of network given input
 	std::vector<std::vector<float>> compute(std::vector<float> input) {
@@ -278,7 +260,7 @@ int main(void) {
 	std::vector<std::vector<float>> expectations {
 		{0},{1},{1},{0}
 	};
-	for (size_t cycle = 0; cycle < 5000; cycle++) {
+	for (size_t cycle = 0; cycle < 256; cycle++) {
 		for (size_t idx = 0; idx < tests.size(); idx++) {
 			n.train(tests[idx], expectations[idx]);
 		}
