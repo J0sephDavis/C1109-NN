@@ -113,8 +113,6 @@ public:
 			//Output vector
 			for (int k = 0; k < layer_width; k++) { //print output
 				std::cout << outputs[i][k] << ", ";
-				if(layer_width > 4 && (k-1)%3 == 0)
-					std::cout << "\n\t";
 			}
 			std::cout << "]\n";
 			//Neuron weights
@@ -122,9 +120,6 @@ public:
 				std::cout << "*N-" << j << " w[]  ";
 				for (int k = 0; k < input_width; k++) { //print weights
 					std::cout << L->neurons[j]->weights[k] << ", ";
-					if (k>4 && (k+1)%6 == 0) {
-						std::cout << "\n\t";
-					}
 				}
 				std::cout << "\n";
 			}
@@ -138,10 +133,10 @@ public:
 int main(void) {
 	//preparations
 	std::srand(time(NULL));
-	const int width = 7;
-	const int depth = 3;
-	const std::vector<float> inputs = {1,1};
-	const std::vector<float> expected_output = {1.0};
+	const int width = 2;
+	const int depth = 2;
+	const std::vector<float> inputs = {1,0.3};
+	const std::vector<float> expected_output = {0.4};
 	const float learning_rate = 0.25;
 	network n(inputs.size(), width,depth); //the network
 	std::vector<std::vector<float>> output = n.compute(inputs);
@@ -149,16 +144,18 @@ int main(void) {
 	//get error contribution of output nodes
 	for (size_t output_index = 0; output_index < output.back().size();
 			output_index++){
-		std::cout << "#OUTPUT GRADIENT\n";
+		std::cout << "\n#L-" << output.size()-1 << "OUTPUT GRADIENT\n";
 		auto& neuron = n.layers.back().neurons.at(output_index);
 		float error_strength = expected_output.at(output_index) - neuron->output;
 		float derivative = (neuron->output * (1-neuron->output));
 
 		neuron->error_contribution = error_strength * derivative;
-		std::cout << "(target - actual output)\t" << error_strength
-		<< "\nd=(t-o)f'(z)\t" << neuron->error_contribution << "\n";
+		std::cout << "(target - actual output)\t|" << error_strength;
+		std::cout << "\n\t\t\tf'(net)\t| " <<  derivative;
+		std::cout << "\n\t\td=(t-o)f'(net)\t|" << neuron->error_contribution << "\n";
 		if (error_strength == 0) {
 			std::cout << "no error. Stop.\n";
+			return 0;
 		}
 		//d_pj = (t_pj - o_pj) * f'(z_pj)
 		//t_pj - target output
@@ -173,64 +170,73 @@ int main(void) {
 		for (size_t weight_index = 0;
 				weight_index < neuron->weights.size()-1;
 				weight_index++) {
-			std::cout << "W-" << weight_index << " "
+			std::cout << "\t\t\tW-" << weight_index << "\t|"
 				<< neuron->weights.at(weight_index) << "\n";
 			auto& input_neuron = n.layers.at(n.layers.size()-2)
 				.neurons.at(weight_index);
 			float delta_weight = -learning_rate * 	//-learning rate
 				neuron->error_contribution * 	//d_pj
 				input_neuron->output; 		//o_pi
-			std::cout << "delta\t" << delta_weight << "\n";
+			std::cout << "\t\t\tdelta\t|" << delta_weight << "\n";
 			neuron->weights.at(weight_index) = neuron->weights
 				.at(weight_index) + delta_weight; // w + dW
 
 		}
 	}
-	for (int i = n.layers.size()-2; i >= 0; i--) {
-		std::cout << "#L-" << i << "\n";
+	//hidden layers
+	for (int layer_index = n.layers.size()-2; layer_index >= 0;
+			layer_index--) {
+		std::cout << "\n#L-" << layer_index;
 
-		auto& layer = n.layers.at(i);
-		auto& upper_layer = n.layers.at(i+1);
-		std::vector<float> input_values = {};
+		auto& layer = n.layers.at(layer_index);
+		auto& upper_layer = n.layers.at(layer_index+1);
+		std::vector<float> input_values = {}; //
 
-		if (i == 0)
-			input_values = inputs; //the output of each u_i / o_pi
-		else {
-			for (size_t a = 0; a < n.layers.at(i-1).neurons.size()-1; a++) {
-				auto& tmp = n.layers.at(i-1).neurons.at(a);
-				input_values.push_back(tmp->output);
-			}
+		if (layer_index == 0) //INPUT layer
+			input_values = inputs; //Grab the test-set input
+		else for (size_t input_k = 0; input_k < n.layers
+				.at(layer_index-1).neurons.size()-1;
+				input_k++) {
+			auto& tmp = n.layers.at(layer_index-1).neurons.at(input_k);
+			input_values.emplace_back(tmp->output);
 		}
-		std::cout << "layer input:";
+		std::cout << " INPUT\t";
+		int tmp = 0;
 		for (auto& inval : input_values) {
-			std::cout << inval << ",";
+			std::cout << inval << ", ";
 		}
 		std::cout <<"\n";
-		for (size_t j = 0; j < layer.neurons.size(); j++) {
-			//d_pk = f_j'(z_pj) * SUM_k (d_pk * w_kj)
+		for (size_t u_j = 0; u_j < layer.neurons.size(); u_j++) {
+			//d_pj = f_j'(z_pj) * SUM_k (d_pk * w_kj)
 			//where the k-neurons are an upper layer
-			std::cout << ">Neuron-" << j << "\n";
-			auto& neuron = layer.neurons.at(j);
+			std::cout << "*N-" << u_j << "\n";
+			auto& neuron = layer.neurons.at(u_j);
 			float derivative = neuron->output * (1 - neuron->output);
-			float associated_error = 0;
-			for (size_t k = 0; k < upper_layer.neurons.size(); k++) { //nodes this feeds into
+			std::cout << "f_j'(z_pj)\t|" << derivative << "\n";
+			float associated_error = 0; // SUM_k (d_pk * w_kj)
+			for (size_t k = 0; k < upper_layer.neurons.size(); k++) {
 				auto& uppper_neuron = upper_layer.neurons.at(k);
 				//d_pk * w_kj
-				float upper_contribution = uppper_neuron->error_contribution
-					* uppper_neuron->weights.at(j);
-				associated_error += upper_contribution;
+				associated_error += uppper_neuron
+					->error_contribution * uppper_neuron
+					->weights.at(u_j);
 			}
-			std::cout << "sum_k:\t" << associated_error << "\n";
+			std::cout << "sum_k\t\t|" << associated_error << "\n";
 			neuron->error_contribution = associated_error * derivative; //d_pk
-			std::cout << "d_pk:\t" << neuron->error_contribution << "\n";
-			for (size_t l = 0; l <= neuron->weights.size()-1;l++) {
-
-				float input_value = input_values[l];
-				float delta_rule = -learning_rate * neuron->error_contribution *
+			std::cout << "d_pk:\t\t|" << neuron->error_contribution
+				<< "\n";
+			std::cout << "delta:\t\t|";
+			for (size_t u_i = 0; u_i <= neuron->weights.size()-1;
+					u_i++) {
+				float input_value = input_values[u_i]; //o_pi
+				//delta = -learning_rate * d_pj * o_pi
+				float delta_rule = -learning_rate *
+					neuron->error_contribution *
 					input_value;
-				std::cout << "delta(w_" << l << "):\t" << delta_rule << "\n";
-				neuron->weights[l] = delta_rule + neuron->weights[l];
+				std::cout << delta_rule << ", ";
+				neuron->weights[u_j] = delta_rule + neuron->weights[u_j];
 			}
+			std::cout << "\n";
 		}
 	}
 	return 0;
