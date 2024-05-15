@@ -11,7 +11,7 @@ class perceptron {
 	public:
 		perceptron(int count_inputs) {
 			for (int i = 0; i < count_inputs; i++) {
-				weights.push_back((std::rand()% 4 + 1)*0.25);
+				weights.push_back((std::rand()% 20 + 1)*0.05);
 			}
 		}
 		float calculate(const std::vector<float> input) {
@@ -227,6 +227,20 @@ public:
 				learning_rate, upper_layer);
 		}
 	}
+	void revealWeights() {
+		for (int lid = layers.size()-1; lid >= 0; lid--) {
+			std::cout << "\nLayer " << lid << ":\n========\nWeights\t|";
+			for (int a = 0; a < layers.at(lid)->input_width; a++)
+				std::cout << a << "\t";
+			for (int nid = layers.at(lid)->neurons.size()-1;
+					nid >= 0; nid--) {
+				std::cout << "\nNode " << nid << "\t|";
+				for (auto& w : layers.at(lid)->neurons.at(nid)->weights)
+					std::cout << w << "\t";
+			}
+			std::cout << "\n";
+		}
+	}
 	int width,depth;
 	std::vector<std::shared_ptr<layer>> layers; //0 = first-layer, last is output; input 'layer' is just the vector given
 };
@@ -239,19 +253,7 @@ int main(void) {
 	const int depth = 3;
 	network n(2, width,depth); //the network
 	//show weights before
-	for (int lid = n.layers.size()-1; lid >= 0; lid--) {
-		std::cout << "\nLayer " << lid << ":\n========\nWeights\t|";
-		for (int a = 0; a < n.layers.at(lid)->input_width; a++)
-			std::cout << a << "\t";
-		for (int nid = n.layers.at(lid)->neurons.size()-1;
-				nid >= 0; nid--) {
-			std::cout << "\nNode " << nid << "\t|";
-			for (auto& w : n.layers.at(lid)->neurons.at(nid)->weights)
-				std::cout << w << "\t";
-		}
-		std::cout << "\n";
-	}
-
+	n.revealWeights();
 	std::vector<std::vector<float>> tests = {
 		{0,0},{0,1},
 		{1,0},{1,1}
@@ -266,17 +268,6 @@ int main(void) {
 		}
 	}
 	std::cout << "\n\nafter";
-	for (int lid = n.layers.size()-1; lid >= 0; lid--) {
-		std::cout << "\nLayer " << lid << ":\n========\nWeights\t|";
-		for (int a = 0; a < n.layers.at(lid)->input_width; a++)
-			std::cout << a << "\t";
-		for (int nid = n.layers.at(lid)->neurons.size()-1;
-				nid >= 0; nid--) {
-			std::cout << "\nNode " << nid << "\t|";
-			for (auto& w : n.layers.at(lid)->neurons.at(nid)->weights)
-				std::cout << w << "\t";
-		}
-		std::cout << "\n";
-	}
+	n.revealWeights();
 	return 0;
 }
