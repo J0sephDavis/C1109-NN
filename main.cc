@@ -126,9 +126,13 @@ public:
 		}
 		return std::move(outputs);
 	}
+	bool train(std::vector<float> test, std::vector<float> label) {
+		return false;
+	}
 	int width,depth;
 	std::vector<layer> layers; //0 = first-layer, last is output; input 'layer' is just the vector given
 };
+
 
 int main(void) {
 	//preparations
