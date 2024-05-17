@@ -1,4 +1,10 @@
 #include "headers.hh"
+enum perceptron_type {
+	logistic,
+	bias,
+	passthrough
+};
+//
 class perceptron {
 	public:
 		perceptron(int,bool rand_weights = true);
@@ -25,9 +31,4 @@ public:
 	pass_perceptron();
 	float calculate(const std::vector<float>) override;
 	void train(float, std::vector<float>) override;
-};
-enum perceptron_type {
-	logistic,
-	bias,
-	passthrough
 };
