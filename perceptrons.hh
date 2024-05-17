@@ -1,12 +1,12 @@
 #include "headers.hh"
 class perceptron {
 	public:
-		perceptron(int,bool);
+		perceptron(int,bool rand_weights = true);
 		virtual float calculate(const std::vector<float>);
 		virtual float activation(float);
 		virtual void revealWeights();
 		virtual void train(float, std::vector<float>);
-	protected:
+	public:
 		std::vector<float> weights;
 		float weighted_sum = 0;
 		float error_contribution = 0;
