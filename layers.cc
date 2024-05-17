@@ -38,6 +38,13 @@ std::vector<float> layer::output(std::vector<float> input) {
 	}
 	return std::move(out);
 }
+std::vector<float> input_layer::output(std::vector<float> input) {
+	std::vector<float> out = {};
+	for (size_t i = 0; i < neurons.size(); i++) {
+		out.push_back(neurons[i]->calculate({input[i]}));
+	}
+	return std::move(out);
+}
 //ERROR_CONTRIBUTION
 /* update_err_contrib
  * Computes error contribution/strength for each neuron in the layer,

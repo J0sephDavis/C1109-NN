@@ -3,7 +3,7 @@
 class layer {
 public:
 	layer(size_t,size_t,size_t,perceptron_type);
-	std::vector<float> output(std::vector<float> input);
+	virtual std::vector<float> output(std::vector<float> input);
 	virtual void update_err_contrib(std::vector<float> label,
 			std::shared_ptr<layer> upper_layer);
 	virtual void train(std::vector<float>input, const float learning_rate);
@@ -15,8 +15,7 @@ public:
 };
 class output_layer : public layer {
 public:
-	/* No bias neuron on this layer
-	 * */
+	/* No bias neuron on this layer */
 	output_layer(int width, int input_width,
 			perceptron_type type = logistic);
 	void update_err_contrib(std::vector<float> label,
@@ -27,11 +26,5 @@ public:
 class input_layer : public layer {
 public:
 	input_layer(size_t input_width, perceptron_type type = passthrough);
-	std::vector<float> output(std::vector<float> input) {
-		std::vector<float> out = {};
-		for (size_t i = 0; i < neurons.size(); i++) {
-			out.push_back(neurons[i]->calculate({input[i]}));
-		}
-		return std::move(out);
-	}
+	std::vector<float> output(std::vector<float> input) override;
 };
