@@ -53,7 +53,8 @@ float layer::get_associated_err(size_t neuron_j) {
 	std::cout << "sum_k(d_kjw_kj)\t[";
 #endif
 	float associated_error = 0;
-	for (auto& u_k : neurons) {
+	for (size_t k = bias_neurons; k < neurons.size(); k++) {
+		const auto& u_k = neurons.at(k);
 #ifdef PRINT_ERRCON
 		float err = u_k->error_contribution * u_k->weights.at(neuron_j);
 		std::cout << err << ", ";
