@@ -46,6 +46,25 @@ std::vector<float> input_layer::output(std::vector<float> input) {
 	return std::move(out);
 }
 //ERROR_CONTRIBUTION
+float layer::get_associated_err(size_t neuron_j) {
+#ifdef PRINT_ERRCON
+	std::cout << "### Neuron " << u_j
+		<< "|k=" << bias_neurons << "\n";
+	std::cout << "sum_k(d_kjw_kj)\t[";
+#endif
+	float associated_error = 0;
+	for (auto& u_k : neurons) {
+#ifdef PRINT_ERRCON
+		float err = u_k->error_contribution * u_k->weights.at(neuron_j);
+		std::cout << err << ", ";
+		associated_error += err;
+#else
+		associated_error +=
+			u_k->error_contribution * u_k->weights.at(neuron_j);
+#endif
+	}
+	return associated_error;
+}
 /* update_err_contrib
  * Computes error contribution/strength for each neuron in the layer,
  * */
@@ -57,26 +76,8 @@ void layer::update_err_contrib(std::vector<float> label,
 		//d_pj = f_j'(z_pj) * SUM_k (d_pk * w_kj)
 		auto& neuron = neurons.at(u_j);
 	//==Caclulate 2nd half of error equation - SUM_k (d_pk * w_kj==
-		float associated_error = 0;
-#ifdef PRINT_ERRCON
-		std::cout << "### Neuron " << u_j
-			<< "|k=" << upper_layer->bias_neurons << "\n";
-		std::cout << "sum_k(d_kjw_kj)\t[";
-#endif
-		for (size_t k = upper_layer->bias_neurons;
-				//Assumes the first neurons are always bias neurons.
-				k < upper_layer->neurons.size(); k++) {
-			auto& uppper_neuron = upper_layer->neurons.at(k);
-			//d_pk * w_kj
-			auto error = uppper_neuron
-				->error_contribution * uppper_neuron
-				->weights.at(u_j);
-			associated_error += error;
-#ifdef PRINT_ERRCON
-			std::cout << associated_error << ", ";
-#endif
-		}
-		neuron->error_contribution = associated_error
+		neuron->error_contribution
+			= upper_layer->get_associated_err(u_j)
 			* neuron->derivative; //d_pk
 #ifdef PRINT_ERRCON
 		std::cout << "]= " << associated_error << "\n";
