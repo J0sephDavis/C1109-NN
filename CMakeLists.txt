@@ -11,6 +11,7 @@ add_executable(NeuralNet
 	layers.cc
 	perceptrons.cc
 	perceptrons.hh
+	headers.hh
 )
 
 target_include_directories(NeuralNet PUBLIC "${PROJECT_BINARY_DIR}")

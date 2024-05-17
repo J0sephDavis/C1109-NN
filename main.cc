@@ -1,16 +1,8 @@
 //#define PRINT_TRAINING
-#define PRINT_ERRCON
-#include "perceptrons.hh"
+//#define PRINT_ERRCON
+#include "headers.hh"
+//#include "perceptrons.hh"
 #include "layers.hh"
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
-#include <stdexcept>
-#include <vector>
-#include <iostream>
-#include <memory> //unique_ptr
-#include <math.h>
-
 class network {
 #define BIAS_NEURONS 1
 public:
