@@ -43,6 +43,9 @@ public:
 	}
 	void train(float learning_rate, std::vector<float> test, std::vector<float> label) {
 		(void)label;
+		for (int i = 0; i < BIAS_NEURONS; i++) {
+			test.insert(test.begin(),0.0f);
+		}
 		//PREP
 		std::vector<std::vector<float>> output = compute(test);
 #ifdef PRINT_TRAINING
@@ -131,13 +134,13 @@ int main(void) {
 			<< (expectations[i][0]-actual)<< ")\n";
 
 	}
-#define CYCLES 1
+#define CYCLES 1000
+#if CYCLES > 0
 	for (size_t cycle = 0; cycle < CYCLES; cycle++) {
 		for (size_t idx = 0; idx < tests.size(); idx++) {
 			n.train(0.9,tests[idx], expectations[idx]);
 		}
 	}
-	std::cout << "trained\n";
 	for (size_t i = 0; i < tests.size(); i++){
 		std::cout << "T:[";
 		for (auto& v : tests[i]) std::cout << v << ", ";
@@ -148,7 +151,11 @@ int main(void) {
 			<< (expectations[i][0]-actual)<< ")\n";
 
 	}
+#else
+	n.train(0.25, tests[0],expectations[0]);
+#endif
 	//getchar();
+	std::cout << "trained\n";
 	n.revealWeights();
 	return 0;
 }
