@@ -1,7 +1,8 @@
+#define PRINT_ERRCON
 #include "layers.hh"
 //INITIALIZE
 layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
-		perceptron_type type = logistic) {
+		perceptron_type type) {
 	this->width = _width+_bias_neurons;
 	this->input_width = _input_width;
 	this->bias_neurons = _bias_neurons;
@@ -23,10 +24,6 @@ output_layer::output_layer(int width, int input_width, perceptron_type type)
 	: layer(width,input_width,0,type){
 	//
 }
-input_layer::input_layer(size_t input_width, perceptron_type type)
-	: layer(input_width, input_width, 0, type) {
-			//
-}
 //OUTPUT
 std::vector<float> layer::output(std::vector<float> input) {
 	std::vector<float> out = {};
@@ -38,17 +35,10 @@ std::vector<float> layer::output(std::vector<float> input) {
 	}
 	return std::move(out);
 }
-std::vector<float> input_layer::output(std::vector<float> input) {
-	std::vector<float> out = {};
-	for (size_t i = 0; i < neurons.size(); i++) {
-		out.push_back(neurons[i]->calculate({input[i]}));
-	}
-	return std::move(out);
-}
 //ERROR_CONTRIBUTION
 float layer::get_associated_err(size_t neuron_j) {
 #ifdef PRINT_ERRCON
-	std::cout << "### Neuron " << u_j
+	std::cout << "### Neuron " << neuron_j
 		<< "|k=" << bias_neurons << "\n";
 	std::cout << "sum_k(d_kjw_kj)\t[";
 #endif
@@ -64,6 +54,9 @@ float layer::get_associated_err(size_t neuron_j) {
 			u_k->error_contribution * u_k->weights.at(neuron_j);
 #endif
 	}
+#ifdef PRINT_ERRCON
+		std::cout << "]= " << associated_error << "\n";
+#endif
 	return associated_error;
 }
 /* update_err_contrib
@@ -81,7 +74,6 @@ void layer::update_err_contrib(std::vector<float> label,
 			= upper_layer->get_associated_err(u_j)
 			* neuron->derivative; //d_pk
 #ifdef PRINT_ERRCON
-		std::cout << "]= " << associated_error << "\n";
 		std::cout << "derivative\t|" << neuron->derivative << "\n";
 		std::cout << "E contribution\t|"
 			<< neuron->error_contribution << "\n";

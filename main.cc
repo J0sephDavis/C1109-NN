@@ -1,7 +1,5 @@
-//#define PRINT_TRAINING
-//#define PRINT_ERRCON
+#define PRINT_TRAINING
 #include "headers.hh"
-//#include "perceptrons.hh"
 #include "layers.hh"
 class network {
 #define BIAS_NEURONS 1
@@ -10,9 +8,8 @@ public:
 		this->depth = _depth;
 		this->width = _width;
 		//generate
-		layers.emplace_back(new input_layer(input_width, passthrough));
-		for (int i = 1; i < depth-1; i++) {
-//layer(size_t width, size_t input_width, perceptron_type type = logistic)
+		layers.emplace_back(new layer(width, input_width, BIAS_NEURONS, passthrough));
+		for (int i = 1; i < depth - 1; i++) {
 			layers.emplace_back(new layer(width, layers[i-1]->width,
 						BIAS_NEURONS,logistic));
 		}
@@ -21,10 +18,9 @@ public:
 	//compute output of network given input
 	std::vector<std::vector<float>> compute(std::vector<float> input) {
 		std::vector<std::vector<float>> outputs;
-		std::shared_ptr<input_layer> inpl = std::dynamic_pointer_cast<input_layer>(layers[0]);
-		outputs.push_back(inpl->output(input));
-		for (int i = 1; i < depth; i++) {
-			outputs.push_back(layers[i]->output(outputs[i-1]));
+		for (int i = 0; i < depth; i++) {
+			if (i != 0) input = outputs[i-1];
+			outputs.push_back(layers[i]->output(input));
 		}
 		return std::move(outputs);
 	}
@@ -152,7 +148,7 @@ int main(void) {
 			<< (expectations[i][0]-actual)<< ")\n";
 
 	}
-	getchar();
+	//getchar();
 	n.revealWeights();
 	return 0;
 }

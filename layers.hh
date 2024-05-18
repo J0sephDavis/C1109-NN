@@ -2,7 +2,8 @@
 //a layer of perceptrons
 class layer {
 public:
-	layer(size_t,size_t,size_t,perceptron_type);
+	layer(size_t _width, size_t _input_width, size_t _bias_neurons,
+		perceptron_type type = logistic);
 	virtual std::vector<float> output(std::vector<float> input);
 	float get_associated_err(size_t neuron_j);
 	virtual void update_err_contrib(std::vector<float> label,
@@ -23,9 +24,4 @@ public:
 				std::shared_ptr<layer> upper_layer) override;
 	void train(std::vector<float> input,
 			const float learning_rate) override;
-};
-class input_layer : public layer {
-public:
-	input_layer(size_t input_width, perceptron_type type = passthrough);
-	std::vector<float> output(std::vector<float> input) override;
 };
