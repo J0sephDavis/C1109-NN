@@ -143,7 +143,8 @@ void output_layer::update_err_contrib(std::vector<float> label,
 }
 //TRAIN
 /* Calls the perceptrons training function of each neuron. */
-void layer::train(std::vector<float> input, const float learning_rate) {
+void layer::train(std::vector<float> input, const float learning_rate,
+		const float momentum) {
 	size_t neuron_index = 0;
 	//for (; neuron_index < this->bias_neurons; neuron_index++) {
 	//	auto n = std::dynamic_pointer_cast<bias_perceptron>(neurons.at(neuron_index));
@@ -153,15 +154,15 @@ void layer::train(std::vector<float> input, const float learning_rate) {
 	//	neurons.at(neuron_index)->train(learning_rate,input);
 	//}
 	for (auto& neuron : neurons) {
-		neuron->train(learning_rate, (input));
+		neuron->train(momentum, learning_rate, (input));
 
 	}
 }
-void output_layer::train(std::vector<float> input,
-		const float learning_rate) {
+void output_layer::train(std::vector<float> input, const float learning_rate,
+		const float momentum) {
 	//get error contribution of output nodes
 	for (size_t j = 0; j < neurons.size(); j++) {
 		const auto& neuron = neurons.at(j);
-		neuron->train(learning_rate, (input));
+		neuron->train(momentum, learning_rate, (input));
 	}
 }
