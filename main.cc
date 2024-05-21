@@ -128,21 +128,63 @@ public:
 	std::vector<std::shared_ptr<layer>> layers; //0 = first-layer, last is output; input 'layer' is just the vector given
 };
 
+typedef struct sheet_description {
+	float learning_rate, momentum, threshold;
+	sheet_description(float l, float m, float t) {
+		learning_rate=l;
+		momentum=m;
+		threshold=t;
+	}
+	void print() {
+		std::cout << learning_rate << "," << momentum << ","
+			<< threshold;
+	}
+} sheet_description;
 
+typedef struct summary_row {
+	sheet_description desc;
+	size_t epochs;
+	summary_row(sheet_description run, size_t e): desc(run) {
+		epochs=e;
+	}
+	void print() {
+		desc.print();
+		std::cout << "," << epochs;
+	}
+} summary_row;
+
+float print_stat(std::vector<float> input) {
+	float sum = 0;
+	for (auto& i : input) {
+		std::cout << i << ",";
+		sum+=i;
+	}
+	float avg = sum / input.size();
+	std::cout << sum << "," << avg;
+	return avg;
+}
 int main(void) {
 	//preparations
 	const int width = 2;
 	const int depth = 4;
-	//std::srand(time(NULL));
 	static const std::vector<float> LR {0.1,0.25,0.50,0.75,1.0};
-	static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,0.9,1.0};
+	static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,1.0};
+	std::vector<summary_row> summary = {};
+	size_t run_id = 0;
 for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
-	std::srand(SEED_VAL);
+	std::srand(time(NULL));
+//	std::srand(SEED_VAL);
 	network n(2, width,depth); //the network
 	std::vector<std::vector<float>> results = {};
+	sheet_description current_run(learning_rate, momentum, THRESHOLD);
+	//
+	bool last = false;
+	
 	results.emplace_back(n.benchmark());
-	for (auto& v : results.back()) std::cout << v << ",";
-	std::cout << "\n";
+	current_run.print(); std::cout << ",";
+	print_stat(results.back());
+	std::cout << "," << last << "\n";
+
 	size_t total_epochs = 0;
 	for (size_t era = 0; era < MAX_ERAS; era++) {
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++, total_epochs++) {
@@ -151,19 +193,25 @@ for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
 						tests[idx], expectations[idx]);
 			}
 		}
-		results.emplace_back(n.benchmark());
-		float average = 0;
-		for (auto& v : results.back()) {
-			std::cout << v << ",";
-			average+=v;
+		results.emplace_back(n.benchmark()); 
+		current_run.print(); std::cout << ",";
+		float average  = print_stat(results.back());
+		if (average < THRESHOLD) {
+			era = MAX_ERAS;
+			last = true;
 		}
-		std::cout << "\n";
-		average = average/=results.back().size();
-		if (average < THRESHOLD) era = MAX_ERAS;
+		else if (era+1 >= MAX_ERAS) {
+			last = true;
+		}
+		std::cout << "," << last << "\n";
 	}
-	std::cout << learning_rate << "," << momentum << ","
-		<< EPOCHS << "," << MAX_ERAS << "," << THRESHOLD << ","
-		<< total_epochs <<"\nEND\n";
+//	std::cout << "END\n";
+//	summary.emplace_back(current_run, total_epochs);
 }
+//	for (size_t i = 0; i < summary.size(); i++) {
+//		std::cout << i;
+//		summary.at(i).print();
+//		std::cout << "\n";
+//	}
 	return 0;
 }

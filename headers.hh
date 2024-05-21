@@ -9,7 +9,7 @@
 #include <fstream>
 
 //#define MOMENTUM 1.0f
-#define MAX_ERAS 80
-#define EPOCHS 64
+#define MAX_ERAS 160
+#define EPOCHS 128
 #define THRESHOLD 0.2f
 #define SEED_VAL 2809
