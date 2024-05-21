@@ -12,7 +12,8 @@ class perceptron {
 		float calculate(const std::vector<float> input);
 		virtual float activation(float net_input);
 		virtual void revealWeights();
-		virtual void train(float learning_rate,
+		virtual void train(const float momentum,
+				const float learning_rate,
 				std::vector<float> input);
 	public:
 		std::vector<float> weights;
@@ -27,11 +28,13 @@ public:
 	bias_perceptron();
 	float activation(float net_input) override;
 	void revealWeights() override;
-	void train(float learning_rate, std::vector<float> input) override;
+	void train(const float momentum, const float learning_rate,
+			std::vector<float> input) override;
 };
 class pass_perceptron : public perceptron {
 public:
 	pass_perceptron(int net_input_width, std::vector<bool> weight_mask = {});
 	float activation(float net_input) override;
-	void train(float learning_rate, std::vector<float> input) override;
+	void train(const float momentum, float learning_rate,
+			std::vector<float> input) override;
 };

@@ -66,9 +66,8 @@ void bias_perceptron::revealWeights() {
 	std::cout << "bias=" << output;
 }
 //TRAIN
-#define MOMENTUM 0.3f
 //given an array of inputs, determines the weight changes needed
-void perceptron::train(float learning_rate, std::vector<float> input) {
+void perceptron::train(const float momentum, const float learning_rate, std::vector<float> input) {
 	//DELTA RULE - the change in weight (from neuron u_i to u_j) is
 	//  equal to learning rate, multiplied by
 	//  error contribution (d_pj) then multiplied by the output of
@@ -79,7 +78,7 @@ void perceptron::train(float learning_rate, std::vector<float> input) {
 		float delta_weight = (learning_rate *
 			error_contribution *
 			input[weight_index])
-			+ (MOMENTUM * delta_weights.at(weight_index));
+			+ (momentum * delta_weights.at(weight_index));
 		weights.at(weight_index) += delta_weight;
 		delta_weights.at(weight_index) = delta_weight;
 #ifdef PRINT_TRAINING
@@ -89,7 +88,7 @@ void perceptron::train(float learning_rate, std::vector<float> input) {
 #endif
 	}
 }
-void pass_perceptron::train(float learning_rate, std::vector<float> input) {
+void pass_perceptron::train(const float momentum, const float learning_rate, std::vector<float> input) {
 	for (size_t weight_index = 0; weight_index < weights.size();
 			weight_index++) {
 		//skip the weights intentionally left blank.
@@ -98,7 +97,7 @@ void pass_perceptron::train(float learning_rate, std::vector<float> input) {
 		if (weights.at(weight_index) == 0) continue;
 		float delta_weight = (learning_rate * error_contribution
 			* input[weight_index])
-			+ (MOMENTUM * delta_weights.at(weight_index));
+			+ (momentum * delta_weights.at(weight_index));
 		weights.at(weight_index) += delta_weight;
 		delta_weights.at(weight_index) = delta_weight;
 #ifdef PRINT_TRAINING
@@ -109,8 +108,9 @@ void pass_perceptron::train(float learning_rate, std::vector<float> input) {
 	}
 
 }
-void bias_perceptron::train(float learning_rate, std::vector<float> input) {
+void bias_perceptron::train(const float momentum, const float learning_rate, std::vector<float> input) {
 	(void) input;
+	(void) momentum; //how to take this into account?
 	//TODO revisit
 	output = output + learning_rate*error_contribution;
 	return;
