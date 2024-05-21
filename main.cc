@@ -1,5 +1,3 @@
-//#define PRINT_COMPUTE
-//#define PRINT_TRAINING
 #include "headers.hh"
 #include "layers.hh"
 
@@ -13,7 +11,6 @@ const std::vector<std::vector<float>> expectations {
 };
 
 class network {
-#define BIAS_NEURONS 1
 public:
 	network(int input_width, int _width, int _depth) {
 		this->depth = _depth;
