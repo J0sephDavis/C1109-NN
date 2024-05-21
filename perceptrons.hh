@@ -23,6 +23,13 @@ class perceptron {
 	protected:
 		std::vector<float> delta_weights; //changes in weights
 };
+
+class perceptron_htan : public perceptron {
+	public:
+		perceptron_htan(int, bool rand_weights = true);
+		virtual float activation(float net_input) override;
+};
+
 class bias_perceptron : public perceptron {
 public:
 	bias_perceptron();
