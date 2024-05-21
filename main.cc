@@ -37,20 +37,11 @@ public:
 	}
 	void revealWeights() {
 		for (size_t lid = 0; lid < layers.size(); lid++) {
-			//std::cout << "\nLayer " << lid
-			//	<< ": (inputs:"	<< layers[lid]->input_width
-			//	<< ", width" << layers[lid]->width
-			//	<< ", bias " << layers[lid]->bias_neurons << ")";
-			//std::cout << "\n========\nWeights\t|";
-			//for (size_t a = 0; a < layers.at(lid)->input_width; a++)
-			//	std::cout << a << "\t";
 			for (size_t nid = 0;nid < layers.at(lid)->neurons.size();
 					nid++) {
-			//	std::cout << "\nNode " << nid << "\t|";
 				layers.at(lid)->neurons.at(nid)->revealWeights();
 				std::cout << "\n";
 			}
-			//std::cout << "\n";
 		}
 	}
 	void train(const float learning_rate, const float momentum, std::vector<float> test, std::vector<float> label) {
@@ -113,19 +104,13 @@ public:
 	std::vector<float> benchmark() {
 		std::vector<float> results = {};
 		for (size_t i = 0; i < tests.size(); i++){
-			//std::cout << "T:[";
-			//for (auto& v : tests[i]) std::cout << v << ", ";
-			//std::cout << "], ";
 			float actual = compute(tests[i]).back()[0];
 			results.push_back(abs(expectations[i][0]-actual));
-			//std::cout << "L:" << expectations.at(i)[0] << ", "
-			//	<< "A:" << actual << ",("
-			//	<< (expectations[i][0]-actual)<< ")\n";
 		}
 		return std::move(results);
 	}
 	int width,depth;
-	std::vector<std::shared_ptr<layer>> layers; //0 = first-layer, last is output; input 'layer' is just the vector given
+	std::vector<std::shared_ptr<layer>> layers;
 };
 
 typedef struct sheet_description {
@@ -141,18 +126,6 @@ typedef struct sheet_description {
 	}
 } sheet_description;
 
-typedef struct summary_row {
-	sheet_description desc;
-	size_t epochs;
-	summary_row(sheet_description run, size_t e): desc(run) {
-		epochs=e;
-	}
-	void print() {
-		desc.print();
-		std::cout << "," << epochs;
-	}
-} summary_row;
-
 float print_stat(std::vector<float> input) {
 	float sum = 0;
 	for (auto& i : input) {
@@ -166,10 +139,9 @@ float print_stat(std::vector<float> input) {
 int main(void) {
 	//preparations
 	const int width = 2;
-	const int depth = 4;
+	const int depth = 3;
 	static const std::vector<float> LR {0.1,0.25,0.50,0.75,1.0};
 	static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,1.0};
-	std::vector<summary_row> summary = {};
 	size_t run_id = 0;
 for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
 	std::srand(time(NULL));
@@ -206,12 +178,6 @@ for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
 		std::cout << "," << last << "\n";
 	}
 //	std::cout << "END\n";
-//	summary.emplace_back(current_run, total_epochs);
 }
-//	for (size_t i = 0; i < summary.size(); i++) {
-//		std::cout << i;
-//		summary.at(i).print();
-//		std::cout << "\n";
-//	}
 	return 0;
 }
