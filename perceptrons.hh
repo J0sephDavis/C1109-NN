@@ -8,27 +8,30 @@ enum perceptron_type {
 class perceptron {
 	public:
 		perceptron(int,bool rand_weights = true);
-		virtual float calculate(const std::vector<float>);
-		virtual float activation(float);
+		//compute sum_i (w_ij * o_ij)
+		float calculate(const std::vector<float> input);
+		virtual float activation(float net_input);
 		virtual void revealWeights();
-		virtual void train(float, std::vector<float>);
+		virtual void train(float learning_rate,
+				std::vector<float> input);
 	public:
 		std::vector<float> weights;
-		float weighted_sum = 0;
 		float error_contribution = 0;
 		float output = 0.0; //the last output of this node.
 		float derivative = 0;
+	protected:
+		std::vector<float> delta_weights; //changes in weights
 };
 class bias_perceptron : public perceptron {
 public:
 	bias_perceptron();
-	float calculate(const std::vector<float>) override;
+	float activation(float net_input) override;
 	void revealWeights() override;
-	void train(float, std::vector<float>) override;
+	void train(float learning_rate, std::vector<float> input) override;
 };
 class pass_perceptron : public perceptron {
 public:
-	pass_perceptron();
-	float calculate(const std::vector<float>) override;
-	void train(float, std::vector<float>) override;
+	pass_perceptron(int net_input_width, std::vector<bool> weight_mask = {});
+	float activation(float net_input) override;
+	void train(float learning_rate, std::vector<float> input) override;
 };

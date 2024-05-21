@@ -1,6 +1,17 @@
-#define PRINT_TRAINING
+//#define PRINT_COMPUTE
+//#define PRINT_TRAINING
 #include "headers.hh"
 #include "layers.hh"
+
+const std::vector<std::vector<float>> tests {
+	{0,0},{0,1},
+	{1,0},{1,1}
+
+};
+const std::vector<std::vector<float>> expectations {
+	{0},{1},{1},{0}
+};
+
 class network {
 #define BIAS_NEURONS 1
 public:
@@ -8,7 +19,7 @@ public:
 		this->depth = _depth;
 		this->width = _width;
 		//generate
-		layers.emplace_back(new layer(width, input_width, BIAS_NEURONS, passthrough));
+		layers.emplace_back(new input_layer(width, input_width, BIAS_NEURONS));
 		for (int i = 1; i < depth - 1; i++) {
 			layers.emplace_back(new layer(width, layers[i-1]->width,
 						BIAS_NEURONS,logistic));
@@ -25,27 +36,24 @@ public:
 		return std::move(outputs);
 	}
 	void revealWeights() {
-		for (int lid = layers.size()-1; lid >= 0; lid--) {
-			std::cout << "\nLayer " << lid
-				<< ": (inputs:"	<< layers[lid]->input_width
-				<< ", width" << layers[lid]->width
-				<< ", bias " << layers[lid]->bias_neurons << ")";
-			std::cout << "\n========\nWeights\t|";
-			for (size_t a = 0; a < layers.at(lid)->input_width; a++)
-				std::cout << a << "\t";
-			for (int nid = layers.at(lid)->neurons.size()-1;
-					nid >= 0; nid--) {
-				std::cout << "\nNode " << nid << "\t|";
+		for (size_t lid = 0; lid < layers.size(); lid++) {
+			//std::cout << "\nLayer " << lid
+			//	<< ": (inputs:"	<< layers[lid]->input_width
+			//	<< ", width" << layers[lid]->width
+			//	<< ", bias " << layers[lid]->bias_neurons << ")";
+			//std::cout << "\n========\nWeights\t|";
+			//for (size_t a = 0; a < layers.at(lid)->input_width; a++)
+			//	std::cout << a << "\t";
+			for (size_t nid = 0;nid < layers.at(lid)->neurons.size();
+					nid++) {
+			//	std::cout << "\nNode " << nid << "\t|";
 				layers.at(lid)->neurons.at(nid)->revealWeights();
+				std::cout << "\n";
 			}
-			std::cout << "\n";
+			//std::cout << "\n";
 		}
 	}
 	void train(float learning_rate, std::vector<float> test, std::vector<float> label) {
-		(void)label;
-		for (int i = 0; i < BIAS_NEURONS; i++) {
-			test.insert(test.begin(),0.0f);
-		}
 		//PREP
 		std::vector<std::vector<float>> output = compute(test);
 #ifdef PRINT_TRAINING
@@ -93,7 +101,6 @@ public:
 				std::cout << "out_width:\t|" << upper_layer->width;
 			std::cout << "\n";
 #endif
-			//TRAIN
 			layers.at(layer_index)->update_err_contrib(label, upper_layer);
 		}
 		for (int layer_index = layers.size()-1; layer_index >= 0;
@@ -102,6 +109,20 @@ public:
 			else input_values = output.at(layer_index-1);
 			layers.at(layer_index)->train(input_values, learning_rate);
 		}
+	}
+	std::vector<float> benchmark() {
+		std::vector<float> results = {};
+		for (size_t i = 0; i < tests.size(); i++){
+			//std::cout << "T:[";
+			//for (auto& v : tests[i]) std::cout << v << ", ";
+			//std::cout << "], ";
+			float actual = compute(tests[i]).back()[0];
+			results.push_back(abs(expectations[i][0]-actual));
+			//std::cout << "L:" << expectations.at(i)[0] << ", "
+			//	<< "A:" << actual << ",("
+			//	<< (expectations[i][0]-actual)<< ")\n";
+		}
+		return std::move(results);
 	}
 	int width,depth;
 	std::vector<std::shared_ptr<layer>> layers; //0 = first-layer, last is output; input 'layer' is just the vector given
@@ -115,47 +136,44 @@ int main(void) {
 	const int depth = 4;
 	network n(2, width,depth); //the network
 	//show weights before
-	n.revealWeights();
-	std::vector<std::vector<float>> tests = {
-		{0,0},{0,1},
-		{1,0},{1,1}
-
-	};
-	std::vector<std::vector<float>> expectations {
-		{0},{1},{1},{0}
-	};
-	for (size_t i = 0; i < tests.size(); i++){
-		std::cout << "T:[";
-		for (auto& v : tests[i]) std::cout << v << ", ";
-		std::cout << "], ";
-		float actual = n.compute(tests[i]).back()[0];
-		std::cout << "E:" << expectations.at(i)[0] << ", "
-			<< "A:" << actual << ",("
-			<< (expectations[i][0]-actual)<< ")\n";
-
+//	n.revealWeights();
+	std::vector<std::vector<float>> results = {};
+	results.emplace_back(n.benchmark());
+//	std::cout << "error [\n"; 
+	for (auto& v : results.back()) std::cout << v << ",";
+	std::cout << "\n";
+#define ERAS 40
+#define EPOCHS 512
+	for (size_t era = 0; era < ERAS; era++) {
+		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
+			for (size_t idx = 0; idx < tests.size(); idx++) {
+				n.train(0.25,tests[idx], expectations[idx]);
+			}
 	}
-#define CYCLES 1000
-#if CYCLES > 0
-	for (size_t cycle = 0; cycle < CYCLES; cycle++) {
-		for (size_t idx = 0; idx < tests.size(); idx++) {
-			n.train(0.9,tests[idx], expectations[idx]);
-		}
+	results.emplace_back(n.benchmark());
+	//std::cout << "results ["; 
+	for (auto& v : results.back()) std::cout << v << ",";
+	//std::cout << "]\t";
+	//for (size_t x = 0; x < results.back().size(); x++) {
+	//	std::cout << (results.back()[x]
+	//			- results.at(results.size()-2)[x])
+	//		<< "\t";
+	//}
+	std::cout << "\n";
 	}
-	for (size_t i = 0; i < tests.size(); i++){
-		std::cout << "T:[";
-		for (auto& v : tests[i]) std::cout << v << ", ";
-		std::cout << "], ";
-		float actual = n.compute(tests[i]).back()[0];
-		std::cout << "E:" << expectations.at(i)[0] << ", "
-			<< "A:" << actual << ",("
-			<< (expectations[i][0]-actual)<< ")\n";
-
-	}
-#else
-	n.train(0.25, tests[0],expectations[0]);
-#endif
-	//getchar();
-	std::cout << "trained\n";
-	n.revealWeights();
+//
+//	std::cout << "after training:\n";
+//	n.revealWeights();
+//	std::cout << "==\n";
+//	for (size_t i = 0; i < tests.size(); i++){
+//		std::cout << "T:[";
+//		for (auto& v : tests[i]) std::cout << v << ", ";
+//		std::cout << "], ";
+//		float actual = n.compute(tests[i]).back()[0];
+//		std::cout << "L:" << expectations.at(i)[0] << ", "
+//			<< "A:" << actual << "\tE:("
+//			<< (expectations[i][0]-actual)<< ")\n";
+//
+//	}
 	return 0;
 }

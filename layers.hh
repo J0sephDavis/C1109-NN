@@ -10,7 +10,7 @@ public:
 			std::shared_ptr<layer> upper_layer);
 	virtual void train(std::vector<float>input, const float learning_rate);
 public:
-	std::vector<std::unique_ptr<perceptron>> neurons;
+	std::vector<std::shared_ptr<perceptron>> neurons;
 	size_t width; //neurons in layer
 	size_t input_width; //inputs to layer. 0 ifeq input layer.
 	size_t bias_neurons;
@@ -24,4 +24,9 @@ public:
 				std::shared_ptr<layer> upper_layer) override;
 	void train(std::vector<float> input,
 			const float learning_rate) override;
+};
+class input_layer : public layer {
+public:
+	input_layer(size_t width, size_t input_width, size_t bias);
+	virtual std::vector<float> output(std::vector<float> input) override;
 };
