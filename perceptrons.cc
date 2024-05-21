@@ -1,4 +1,5 @@
 #include "perceptrons.hh"
+#include <math.h>
 //INITIALIZE
 perceptron::perceptron(int count_inputs, bool rand_weights) {
 	if (rand_weights) for (int i = 0; i < count_inputs; i++) {
@@ -9,6 +10,10 @@ perceptron::perceptron(int count_inputs, bool rand_weights) {
 		weights.push_back(1);
 		delta_weights.push_back(0);
 	}
+}
+perceptron_htan::perceptron_htan(int count_inputs, bool rand_weights)
+	: perceptron(std::move(count_inputs), std::move(rand_weights)) {
+		//
 }
 bias_perceptron::bias_perceptron() : perceptron(0) {
 		output = 1;
@@ -45,6 +50,13 @@ float perceptron::activation(float input) {
 	//f'(x) = f(x)(1-f(x);
 	derivative = output * (1 - output);
 	return output;
+}
+float perceptron_htan::activation(float input) {
+	output = (2/(1+exp(-2*input)))-1;
+	derivative = cosh(input);
+	derivative = 1/(derivative * derivative);
+	return output;
+
 }
 float bias_perceptron::activation(float input) {
 	(void)input; //disregard
