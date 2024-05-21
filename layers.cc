@@ -24,6 +24,10 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 		neurons.emplace_back(new pass_perceptron(width, std::move(weight_mask)));
 		// for-each bias, create an empty input in the input. e.g., {1,1} becomes {X,1,1} where X is the only bias.
 	}
+	else if (type == hyperbolic_tanget) for (; neuron_index < width;
+			neuron_index++) {
+		neurons.emplace_back(new perceptron_htan(input_width));
+	}
 	else throw std::runtime_error("INVALID ACTIVATION TYPE");
 };
 output_layer::output_layer(int width, int input_width, perceptron_type type)

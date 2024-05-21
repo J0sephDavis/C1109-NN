@@ -2,7 +2,8 @@
 enum perceptron_type {
 	logistic,
 	bias,
-	passthrough
+	passthrough,
+	hyperbolic_tanget
 };
 //
 class perceptron {
