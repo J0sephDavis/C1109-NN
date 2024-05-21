@@ -161,7 +161,7 @@ for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
 //	std::srand(time(NULL));
 	std::srand(SEED_VAL);
-	network n(2, width,depth, hyperbolic_tanget); //the network
+	network n(2, width,depth, neuron_type); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description current_run(learning_rate, momentum, THRESHOLD,
 			neuron_type);
