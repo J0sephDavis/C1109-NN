@@ -53,7 +53,7 @@ public:
 			//std::cout << "\n";
 		}
 	}
-	void train(float learning_rate, std::vector<float> test, std::vector<float> label) {
+	void train(const float learning_rate, const float momentum, std::vector<float> test, std::vector<float> label) {
 		//PREP
 		std::vector<std::vector<float>> output = compute(test);
 #ifdef PRINT_TRAINING
@@ -107,7 +107,7 @@ public:
 				layer_index--) {
 			if (layer_index == 0) input_values = test;
 			else input_values = output.at(layer_index-1);
-			layers.at(layer_index)->train(input_values, learning_rate);
+			layers.at(layer_index)->train(input_values, learning_rate, momentum);
 		}
 	}
 	std::vector<float> benchmark() {
@@ -131,49 +131,37 @@ public:
 
 int main(void) {
 	//preparations
-	std::srand(time(NULL));
+	//std::srand(time(NULL));
+	std::srand(2809);
 	const int width = 2;
 	const int depth = 4;
 	network n(2, width,depth); //the network
-	//show weights before
-//	n.revealWeights();
 	std::vector<std::vector<float>> results = {};
 	results.emplace_back(n.benchmark());
-//	std::cout << "error [\n"; 
 	for (auto& v : results.back()) std::cout << v << ",";
 	std::cout << "\n";
-#define ERAS 40
-#define EPOCHS 512
+	static const std::vector<float> LR {0.1,0.25,0.50,0.75,1.0};
+	static const std::vector<float> MOMENTUM {0.1,0.25,0.5,0.75,0.9,1.0};
+for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
 	for (size_t era = 0; era < ERAS; era++) {
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
-				n.train(0.25,tests[idx], expectations[idx]);
+				n.train(learning_rate, momentum,
+						tests[idx], expectations[idx]);
 			}
+		}
+		results.emplace_back(n.benchmark());
+		float average = 0;
+		for (auto& v : results.back()) {
+			std::cout << v << ",";
+			average+=v;
+		}
+		std::cout << "\n";
+		average = average/=results.back().size();
+		if (average < THRESHOLD) break;
 	}
-	results.emplace_back(n.benchmark());
-	//std::cout << "results ["; 
-	for (auto& v : results.back()) std::cout << v << ",";
-	//std::cout << "]\t";
-	//for (size_t x = 0; x < results.back().size(); x++) {
-	//	std::cout << (results.back()[x]
-	//			- results.at(results.size()-2)[x])
-	//		<< "\t";
-	//}
-	std::cout << "\n";
-	}
-//
-//	std::cout << "after training:\n";
-//	n.revealWeights();
-//	std::cout << "==\n";
-//	for (size_t i = 0; i < tests.size(); i++){
-//		std::cout << "T:[";
-//		for (auto& v : tests[i]) std::cout << v << ", ";
-//		std::cout << "], ";
-//		float actual = n.compute(tests[i]).back()[0];
-//		std::cout << "L:" << expectations.at(i)[0] << ", "
-//			<< "A:" << actual << "\tE:("
-//			<< (expectations[i][0]-actual)<< ")\n";
-//
-//	}
+	std::cout << LEARNING_RATE << "," << MOMENTUM << ","
+		<< EPOCHS << "," << ERAS << "," << THRESHOLD << "\n";
+}
 	return 0;
 }
