@@ -131,20 +131,21 @@ public:
 
 int main(void) {
 	//preparations
-	//std::srand(time(NULL));
-	std::srand(2809);
 	const int width = 2;
 	const int depth = 4;
+	//std::srand(time(NULL));
+	static const std::vector<float> LR {0.1,0.25,0.50,0.75,1.0};
+	static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,0.9,1.0};
+for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
+	std::srand(SEED_VAL);
 	network n(2, width,depth); //the network
 	std::vector<std::vector<float>> results = {};
 	results.emplace_back(n.benchmark());
 	for (auto& v : results.back()) std::cout << v << ",";
 	std::cout << "\n";
-	static const std::vector<float> LR {0.1,0.25,0.50,0.75,1.0};
-	static const std::vector<float> MOMENTUM {0.1,0.25,0.5,0.75,0.9,1.0};
-for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
-	for (size_t era = 0; era < ERAS; era++) {
-		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
+	size_t total_epochs = 0;
+	for (size_t era = 0; era < MAX_ERAS; era++) {
+		for (size_t epoch = 0; epoch < EPOCHS; epoch++, total_epochs++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
 				n.train(learning_rate, momentum,
 						tests[idx], expectations[idx]);
@@ -158,10 +159,11 @@ for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
 		}
 		std::cout << "\n";
 		average = average/=results.back().size();
-		if (average < THRESHOLD) break;
+		if (average < THRESHOLD) era = MAX_ERAS;
 	}
-	std::cout << LEARNING_RATE << "," << MOMENTUM << ","
-		<< EPOCHS << "," << ERAS << "," << THRESHOLD << "\n";
+	std::cout << learning_rate << "," << momentum << ","
+		<< EPOCHS << "," << MAX_ERAS << "," << THRESHOLD << ","
+		<< total_epochs <<"\nEND\n";
 }
 	return 0;
 }
