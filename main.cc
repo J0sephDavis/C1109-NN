@@ -12,16 +12,16 @@ const std::vector<std::vector<float>> expectations {
 
 class network {
 public:
-	network(int input_width, int _width, int _depth) {
+	network(int input_width, int _width, int _depth, perceptron_type neuron_t) {
 		this->depth = _depth;
 		this->width = _width;
 		//generate
 		layers.emplace_back(new input_layer(width, input_width, BIAS_NEURONS));
 		for (int i = 1; i < depth - 1; i++) {
 			layers.emplace_back(new layer(width, layers[i-1]->width,
-						BIAS_NEURONS,logistic));
+						BIAS_NEURONS,neuron_t));
 		}
-		layers.emplace_back(new output_layer(1, layers[depth-2]->width, logistic)); //single output node
+		layers.emplace_back(new output_layer(1, layers[depth-2]->width, neuron_t)); //single output node
 	}
 	//compute output of network given input
 	std::vector<std::vector<float>> compute(std::vector<float> input) {
@@ -112,14 +112,22 @@ public:
 
 typedef struct sheet_description {
 	float learning_rate, momentum, threshold;
-	sheet_description(float l, float m, float t) {
+	perceptron_type neuron_type;
+	sheet_description(float l, float m, float t, perceptron_type n) {
 		learning_rate=l;
 		momentum=m;
 		threshold=t;
+		neuron_type=n;
 	}
 	void print() {
 		std::cout << learning_rate << "," << momentum << ","
-			<< threshold;
+			<< threshold << ",";
+		if (neuron_type == logistic)
+			std::cout << "logistic";
+		else if (neuron_type == hyperbolic_tanget)
+			std::cout << "tanh";
+		else
+			std::cout << neuron_type;
 	}
 } sheet_description;
 
@@ -133,46 +141,52 @@ float print_stat(std::vector<float> input) {
 	std::cout << sum << "," << avg;
 	return avg;
 }
+void print_line(sheet_description& current_run, std::vector<float> results,
+		bool last, float& average) {
+	current_run.print(); std::cout << ",";
+	average = print_stat(results);
+	std::cout << "," << last << "\n";
+}
+
 int main(void) {
 	//preparations
 	const int width = 2;
 	const int depth = 3;
-	static const std::vector<float> LR {0.1,0.25,0.50,0.75,1.0};
-	static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,1.0};
 	size_t run_id = 0;
-for (auto& learning_rate : LR) for (auto& momentum : MOMENTUM) {
-	std::srand(time(NULL));
-//	std::srand(SEED_VAL);
-	network n(2, width,depth); //the network
+static const std::vector<float> LR {0.1,0.25,0.50,0.75,1.0};
+static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,1.0};
+static const std::vector<perceptron_type> types {logistic, hyperbolic_tanget};
+for (auto& neuron_type : types)
+for (auto& learning_rate : LR)
+for (auto& momentum : MOMENTUM) {
+//	std::srand(time(NULL));
+	std::srand(SEED_VAL);
+	network n(2, width,depth, hyperbolic_tanget); //the network
 	std::vector<std::vector<float>> results = {};
-	sheet_description current_run(learning_rate, momentum, THRESHOLD);
+	sheet_description current_run(learning_rate, momentum, THRESHOLD,
+			neuron_type);
 	//
-	bool last = false;
-	
 	results.emplace_back(n.benchmark());
-	current_run.print(); std::cout << ",";
-	print_stat(results.back());
-	std::cout << "," << last << "\n";
 
-	size_t total_epochs = 0;
+	bool last = false;
+	float average = 0;
+	print_line(current_run, results.back(), last, average);
 	for (size_t era = 0; era < MAX_ERAS; era++) {
-		for (size_t epoch = 0; epoch < EPOCHS; epoch++, total_epochs++) {
+		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
 				n.train(learning_rate, momentum,
 						tests[idx], expectations[idx]);
-			}
-		}
-		results.emplace_back(n.benchmark()); 
-		current_run.print(); std::cout << ",";
-		float average  = print_stat(results.back());
-		if (average < THRESHOLD) {
+		}}
+		float max = 0;
+		for (auto& v : results.back()) if (max < v) max = v;
+		if (average < THRESHOLD and max < 0.3f)
 			era = MAX_ERAS;
+		if (era+1 >= MAX_ERAS)
 			last = true;
-		}
-		else if (era+1 >= MAX_ERAS) {
-			last = true;
-		}
-		std::cout << "," << last << "\n";
+		print_line(current_run, results.back(), last, average);
+		if (last) continue;
+		//
+		results.emplace_back(n.benchmark()); 
 	}
 //	std::cout << "END\n";
 }
