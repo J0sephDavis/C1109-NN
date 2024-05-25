@@ -154,13 +154,13 @@ void csv_header() {
 int main(void) {
 	//preparations
 	const int width = 2;
-	const int depth = 4;
+	const int depth = 3;
 	size_t run_id = 0;
 	auto srand_seed = SEED_VAL; // std::time(NULL)
-	static const std::vector<float> LR {0.5,1};
-	static const std::vector<float> MOMENTUM {0,0.50};
+	static const std::vector<float> LR {0.25,0.5,0.75};
+	static const std::vector<float> MOMENTUM {0.25,0.50,0.75};
 	static const std::vector<perceptron_type> types
-	{logistic};
+	{logistic, hyperbolic_tanget};
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
@@ -187,7 +187,7 @@ for (auto& momentum : MOMENTUM) {
 		float max = 0;
 		for (auto& v : results.back()) if (max < v) max = v;
 		//catch great learners
-		if (average < THRESHOLD and max < 0.3f)
+		if (average < THRESHOLD and max < THRESHOLD)
 			era = MAX_ERAS;
 		//catch bad learners
 		//if (era > MAX_ERAS*0.75 && abs(average-prev_average) < 1.0/10000) {

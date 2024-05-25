@@ -8,7 +8,7 @@
 #include <math.h>
 #include <fstream>
 
-#define MAX_ERAS 700
+#define MAX_ERAS 10000
 #define EPOCHS 1
 #define THRESHOLD 0.2f
 #define SEED_VAL 2809
