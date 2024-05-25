@@ -1,5 +1,4 @@
 #include "layers.hh"
-
 //INITIALIZE
 layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 		perceptron_type type) {
