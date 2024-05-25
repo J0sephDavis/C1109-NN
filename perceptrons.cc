@@ -3,7 +3,7 @@
 //INITIALIZE
 perceptron::perceptron(int count_inputs, bool rand_weights) {
 	if (rand_weights) for (int i = 0; i < count_inputs; i++) {
-		weights.push_back((std::rand()% 20 -10)*0.5);
+		weights.push_back(((std::rand()%10)-5) * 0.1);
 		delta_weights.push_back(0);
 	}
 	else for (int i = 0; i < count_inputs; i++) {

@@ -154,19 +154,19 @@ void csv_header() {
 int main(void) {
 	//preparations
 	const int width = 2;
-	const int depth = 3;
+	const int depth = 4;
 	size_t run_id = 0;
-static const std::vector<float> LR {0.1,0.25,0.50,0.75,0.9};//1.0};
-static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,0.9};//,1.0};
-static const std::vector<perceptron_type> types
-	{logistic};
-//	{logistic, hyperbolic_tanget};
+	auto srand_seed = SEED_VAL; // std::time(NULL)
+	static const std::vector<float> LR {0.25};
+	static const std::vector<float> MOMENTUM {0,0.25,0.50,0.75};
+	static const std::vector<perceptron_type> types
+//	{logistic};
+	{logistic, hyperbolic_tanget};
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
 	csv_header();
-//	std::srand(time(NULL));
-	std::srand(SEED_VAL);
+	std::srand(srand_seed);
 	network n(2, width,depth, neuron_type); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description current_run(learning_rate, momentum, THRESHOLD,
@@ -176,24 +176,31 @@ for (auto& momentum : MOMENTUM) {
 
 	bool last = false;
 	float average = 0;
+	float prev_average = average;
 	for (size_t era = 0; era < MAX_ERAS; era++) {
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
+				if (std::rand()%20 == 0) void();//continue; //add spontaneity
 				n.train(learning_rate, momentum,
 						tests[idx], expectations[idx]);
 		}}
 		float max = 0;
 		for (auto& v : results.back()) if (max < v) max = v;
+		//catch great learners
 		if (average < THRESHOLD and max < 0.3f)
 			era = MAX_ERAS;
+		//catch bad learners
+		if (era > MAX_ERAS*0.75 && abs(average-prev_average) < 0.0000001) {
+			era = MAX_ERAS;
+		}
 		if (era+1 >= MAX_ERAS)
 			last = true;
 		csv_printline(current_run, results.back(), last, average);
-		if (last) continue;
+		prev_average = average;
+		if (last) break;
 		//
 		results.emplace_back(n.benchmark()); 
 	}
-//	std::cout << "END\n";
 }
 	return 0;
 }

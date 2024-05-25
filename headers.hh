@@ -9,8 +9,8 @@
 #include <fstream>
 
 //#define MOMENTUM 1.0f
-#define MAX_ERAS 300
-#define EPOCHS 128
+#define MAX_ERAS 500
+#define EPOCHS 1
 #define THRESHOLD 0.2f
 #define SEED_VAL 2809
 #define BIAS_NEURONS 1
