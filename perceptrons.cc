@@ -122,8 +122,7 @@ void pass_perceptron::train(const float momentum, const float learning_rate, std
 }
 void bias_perceptron::train(const float momentum, const float learning_rate, std::vector<float> input) {
 	(void) input;
-	(void) momentum; //how to take this into account?
-	//TODO revisit
-	output = output + learning_rate*error_contribution;
+	delta_output = learning_rate*error_contribution + momentum*delta_output;
+	output += delta_output;
 	return;
 }

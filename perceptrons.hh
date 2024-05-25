@@ -38,6 +38,8 @@ public:
 	void revealWeights() override;
 	void train(const float momentum, const float learning_rate,
 			std::vector<float> input) override;
+private:
+	float delta_output = 0.0f; // change in output during training(n-1)
 };
 class pass_perceptron : public perceptron {
 public:

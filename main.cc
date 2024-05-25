@@ -157,8 +157,8 @@ int main(void) {
 	const int depth = 4;
 	size_t run_id = 0;
 	auto srand_seed = SEED_VAL; // std::time(NULL)
-	static const std::vector<float> LR {0.25};
-	static const std::vector<float> MOMENTUM {0};//,0.25,0.50,0.75};
+	static const std::vector<float> LR {0.5,1};
+	static const std::vector<float> MOMENTUM {0,0.50};
 	static const std::vector<perceptron_type> types
 	{logistic};
 for (auto& neuron_type : types)
