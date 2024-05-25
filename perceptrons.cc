@@ -1,5 +1,4 @@
 #include "perceptrons.hh"
-#include <math.h>
 //INITIALIZE
 perceptron::perceptron(int count_inputs, bool rand_weights) {
 	if (rand_weights) for (int i = 0; i < count_inputs; i++) {

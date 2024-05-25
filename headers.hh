@@ -16,3 +16,4 @@
 #define BIAS_NEURONS 1
 //#define PRINT_COMPUTE
 //#define PRINT_TRAINING
+//#define PRINT_ERRCON
