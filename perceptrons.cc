@@ -52,7 +52,8 @@ float perceptron::activation(float input) {
 	return output;
 }
 float perceptron_htan::activation(float input) {
-	output = (2/(1+exp(-2*input)))-1;
+	//dtanh(x)/dx = sech^2(x) = 1/cosh^2(x)
+	output = tanh(input);//(2/(1+exp(-2*input)))-1;
 	derivative = cosh(input);
 	derivative = 1/(derivative * derivative);
 	return output;

@@ -141,11 +141,14 @@ float print_stat(std::vector<float> input) {
 	std::cout << sum << "," << avg;
 	return avg;
 }
-void print_line(sheet_description& current_run, std::vector<float> results,
+void csv_printline(sheet_description& current_run, std::vector<float> results,
 		bool last, float& average) {
 	current_run.print(); std::cout << ",";
 	average = print_stat(results);
 	std::cout << "," << last << "\n";
+}
+void csv_header() {
+	std::cout << "Learning Rate,Momentum,Threshold,Type,e1,e2,e3,e4,SUM,AVG,LAST\n";
 }
 
 int main(void) {
@@ -153,12 +156,15 @@ int main(void) {
 	const int width = 2;
 	const int depth = 3;
 	size_t run_id = 0;
-static const std::vector<float> LR {0.1,0.25,0.50,0.75,1.0};
-static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,1.0};
-static const std::vector<perceptron_type> types {logistic, hyperbolic_tanget};
+static const std::vector<float> LR {0.1,0.25,0.50,0.75,0.9};//1.0};
+static const std::vector<float> MOMENTUM {0,0.1,0.25,0.5,0.75,0.9};//,1.0};
+static const std::vector<perceptron_type> types
+	{logistic};
+//	{logistic, hyperbolic_tanget};
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
+	csv_header();
 //	std::srand(time(NULL));
 	std::srand(SEED_VAL);
 	network n(2, width,depth, neuron_type); //the network
@@ -170,7 +176,6 @@ for (auto& momentum : MOMENTUM) {
 
 	bool last = false;
 	float average = 0;
-	print_line(current_run, results.back(), last, average);
 	for (size_t era = 0; era < MAX_ERAS; era++) {
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
@@ -183,7 +188,7 @@ for (auto& momentum : MOMENTUM) {
 			era = MAX_ERAS;
 		if (era+1 >= MAX_ERAS)
 			last = true;
-		print_line(current_run, results.back(), last, average);
+		csv_printline(current_run, results.back(), last, average);
 		if (last) continue;
 		//
 		results.emplace_back(n.benchmark()); 
