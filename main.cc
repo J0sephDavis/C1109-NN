@@ -158,14 +158,15 @@ int main(void) {
 	size_t run_id = 0;
 	auto srand_seed = SEED_VAL; // std::time(NULL)
 	static const std::vector<float> LR {0.25};
-	static const std::vector<float> MOMENTUM {0,0.25,0.50,0.75};
+	static const std::vector<float> MOMENTUM {0};//,0.25,0.50,0.75};
 	static const std::vector<perceptron_type> types
-//	{logistic};
-	{logistic, hyperbolic_tanget};
+	{logistic};
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
+#ifdef PRINT_CSV
 	csv_header();
+#endif
 	std::srand(srand_seed);
 	network n(2, width,depth, neuron_type); //the network
 	std::vector<std::vector<float>> results = {};
@@ -180,7 +181,6 @@ for (auto& momentum : MOMENTUM) {
 	for (size_t era = 0; era < MAX_ERAS; era++) {
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
-				if (std::rand()%20 == 0) void();//continue; //add spontaneity
 				n.train(learning_rate, momentum,
 						tests[idx], expectations[idx]);
 		}}
@@ -190,12 +190,14 @@ for (auto& momentum : MOMENTUM) {
 		if (average < THRESHOLD and max < 0.3f)
 			era = MAX_ERAS;
 		//catch bad learners
-		if (era > MAX_ERAS*0.75 && abs(average-prev_average) < 0.0000001) {
-			era = MAX_ERAS;
-		}
+		//if (era > MAX_ERAS*0.75 && abs(average-prev_average) < 1.0/10000) {
+		//	era = MAX_ERAS;
+		//}
 		if (era+1 >= MAX_ERAS)
 			last = true;
+#ifdef PRINT_CSV
 		csv_printline(current_run, results.back(), last, average);
+#endif
 		prev_average = average;
 		if (last) break;
 		//
