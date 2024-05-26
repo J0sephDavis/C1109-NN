@@ -131,24 +131,50 @@ typedef struct sheet_description {
 	}
 } sheet_description;
 
-float print_stat(std::vector<float> input) {
-	float sum = 0;
-	for (auto& i : input) {
-		std::cout << i << ",";
-		sum+=i;
+typedef struct era_description {
+	float sum;
+	float average, average_diff;
+	float max, max_diff;
+	std::vector<float> diffs;
+	std::vector<float> error;
+	era_description(std::vector<float> current, std::vector<float> previous)
+		: diffs(current.size()),
+		error(current)
+	{
+		for (size_t idx = 0; idx < current.size(); idx++) {
+			const float& val = current.at(idx);
+			const float& prev = previous.at(idx);
+			diffs.at(idx) = abs(val-prev);
+			const float& diff = diffs.at(idx);
+			if (max_diff < diff) max_diff = diff;
+			if (max < val) max = val;
+			average += val*0.25;
+			average_diff += diff * 0.25;
+			sum += val;
+		}
+		average = sum / diffs.size();
 	}
-	float avg = sum / input.size();
-	std::cout << sum << "," << avg;
-	return avg;
+	void print() {
+		for (auto& v : error) std::cout << v << ",";
+		for (auto& d : diffs) std::cout << d << ",";
+		std::cout << average_diff
+			<< "," << max_diff
+			<< "," << max
+			<< "," << average
+			<< "," << sum;
+	}
+} era_description;
+
+inline void csv_printline(sheet_description& current_run,
+		era_description& current_era, bool last) {
+	current_run.print();
+	std::cout << ",";
+	current_era.print();
+	std::cout << last << "\n";
 }
-void csv_printline(sheet_description& current_run, std::vector<float> results,
-		bool last, float& average) {
-	current_run.print(); std::cout << ",";
-	average = print_stat(results);
-	std::cout << "," << last << "\n";
-}
-void csv_header() {
-	std::cout << "Learning Rate,Momentum,Threshold,Type,e1,e2,e3,e4,SUM,AVG,LAST\n";
+inline void csv_header() {
+	std::cout << "Learning Rate,Momentum,Threshold,Type,e1,e2,e3,e4,";
+	std::cout << "d1,d2,d3,d4,avg diff, max diff,max,sum,average,LAST?\n";
 }
 
 int main(void) {
@@ -168,26 +194,25 @@ for (auto& momentum : MOMENTUM) {
 	csv_header();
 #endif
 	std::srand(srand_seed);
+	srand_seed = std::time(NULL);
 	network n(2, width,depth, neuron_type); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description current_run(learning_rate, momentum, THRESHOLD,
 			neuron_type);
 	//
-	results.emplace_back(n.benchmark());
 
-	bool last = false;
-	float average = 0;
-	float prev_average = average;
 	for (size_t era = 0; era < MAX_ERAS; era++) {
+		results.emplace_back(n.benchmark()); 
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
 				n.train(learning_rate, momentum,
 						tests[idx], expectations[idx]);
 		}}
-		float max = 0;
-		for (auto& v : results.back()) if (max < v) max = v;
+		bool last = false;
+		era_description current_era(results.back(),
+				(era==0)?std::vector<float>({0,0,0,0}):results.at(results.size()-2));
 		//catch great learners
-		if (average < THRESHOLD and max < THRESHOLD)
+		if (current_era.average < THRESHOLD and current_era.max < THRESHOLD)
 			era = MAX_ERAS;
 		//catch bad learners
 		//if (era > MAX_ERAS*0.75 && abs(average-prev_average) < 1.0/10000) {
@@ -196,12 +221,9 @@ for (auto& momentum : MOMENTUM) {
 		if (era+1 >= MAX_ERAS)
 			last = true;
 #ifdef PRINT_CSV
-		csv_printline(current_run, results.back(), last, average);
+		csv_printline(current_run, current_era, last);
 #endif
-		prev_average = average;
 		if (last) break;
-		//
-		results.emplace_back(n.benchmark()); 
 	}
 }
 	return 0;
