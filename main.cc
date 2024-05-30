@@ -133,35 +133,25 @@ typedef struct sheet_description {
 
 typedef struct era_description {
 	float sum;
-	float average, average_diff;
-	float max, max_diff;
-	std::vector<float> diffs;
+	float average;
+	float max;
 	std::vector<float> error;
-	era_description(std::vector<float> current, std::vector<float> previous)
-		: diffs(current.size()),
-		error(current)
+	era_description(std::vector<float> current)
+		: error(current)
 	{
 		for (size_t idx = 0; idx < current.size(); idx++) {
 			const float& val = current.at(idx);
-			const float& prev = previous.at(idx);
-			diffs.at(idx) = abs(val-prev);
-			const float& diff = diffs.at(idx);
-			if (max_diff < diff) max_diff = diff;
 			if (max < val) max = val;
 			average += val*0.25;
-			average_diff += diff * 0.25;
 			sum += val;
 		}
-		average = sum / diffs.size();
+		average = sum / current.size();
 	}
 	void print() {
 		for (auto& v : error) std::cout << v << ",";
-		for (auto& d : diffs) std::cout << d << ",";
-		std::cout << average_diff
-			<< "," << max_diff
-			<< "," << max
-			<< "," << average
-			<< "," << sum;
+		std::cout << max
+			<< "," << sum
+			<< "," << average;
 	}
 } era_description;
 
@@ -174,7 +164,7 @@ inline void csv_printline(sheet_description& current_run,
 }
 inline void csv_header() {
 	std::cout << "Learning Rate,Momentum,Threshold,Type,e1,e2,e3,e4,";
-	std::cout << "d1,d2,d3,d4,avg diff, max diff,max,sum,average,LAST?\n";
+	std::cout << "max,sum,average,LAST?\n";
 }
 
 int main(void) {
@@ -209,8 +199,7 @@ for (auto& momentum : MOMENTUM) {
 						tests[idx], expectations[idx]);
 		}}
 		bool last = false;
-		era_description current_era(results.back(),
-				(era==0)?std::vector<float>({0,0,0,0}):results.at(results.size()-2));
+		era_description current_era(results.back());
 		//catch great learners
 		if (current_era.average < THRESHOLD and current_era.max < THRESHOLD)
 			era = MAX_ERAS;
