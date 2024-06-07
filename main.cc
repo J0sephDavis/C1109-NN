@@ -1,3 +1,4 @@
+#include "csv_handler.hh"
 #include "headers.hh"
 #include "layers.hh"
 
@@ -44,28 +45,6 @@ public:
 	void train(const float learning_rate, const float momentum, std::vector<float> test, std::vector<float> label) {
 		//PREP
 		std::vector<std::vector<float>> output = compute(test);
-#ifdef PRINT_TRAINING
-		std::cout << "\n# BEGIN\n";
-		std::cout << "T:\t[";
-		for (auto& i : test) std::cout << i << ", ";
-		std::cout << "]\n";
-		std::cout << "L:\t[";
-		for (auto& i : label) std::cout << i << ", ";
-		std::cout << "]\n";
-		std::cout << "A:\t[";
-		for(auto& i : output.back()) std::cout << i << ", ";
-		std::cout << "]\n";
-		std::cout << "FULL OUTPUT [\n";
-		for (int layer_out = output.size()-1; layer_out >= 0; layer_out--) {
-			std::cout << "\t[";
-			for (auto& e : output.at(layer_out)) {
-				std::cout << e << ", ";
-			}
-			std::cout << "]\n";
-
-		}
-		std::cout << "]\n";
-#endif
 		std::vector<float> input_values = {};
 		//Backpropagate
 		for (int layer_index = layers.size()-1; layer_index >= 0;
@@ -80,15 +59,6 @@ public:
 			std::shared_ptr<layer> upper_layer = NULL;
 			if (layer_index+1 != (int)layers.size())
 				upper_layer = layers.at(layer_index+1);
-#ifdef PRINT_TRAINING
-			std::cout << "\n## Layer " << layer_index << "\n";
-			std::cout << "I:\t[";
-			for (auto& i : input_values) std::cout << i << ", ";
-			std::cout << "]\n";
-			if (upper_layer != NULL)
-				std::cout << "out_width:\t|" << upper_layer->width;
-			std::cout << "\n";
-#endif
 			layers.at(layer_index)->update_err_contrib(label, upper_layer);
 		}
 		for (int layer_index = layers.size()-1; layer_index >= 0;
@@ -153,6 +123,13 @@ typedef struct era_description {
 			<< "," << sum
 			<< "," << average;
 	}
+	static const std::string fields = "e1,e2,e3,e4,avg";
+	std::vector<csv_cell> getCells() {
+		std::vector<csv_cell> row = {};
+		for (const auto& e : error) row.emplace_back(csv_cell(e)); 
+		row.emplace_back(average);
+		return std::move(row);
+	}	
 } era_description;
 
 int main(void) {
@@ -168,9 +145,6 @@ int main(void) {
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
-#ifdef PRINT_CSV
-	csv_header();
-#endif
 	std::srand(srand_seed);
 	srand_seed = std::time(NULL);
 	network n(2, width,depth, neuron_type); //the network
@@ -179,12 +153,11 @@ for (auto& momentum : MOMENTUM) {
 			neuron_type);
 	//
 	for (size_t era = 0; era < MAX_ERAS; era++) {
+		//1. Compute output
+		//2. Analyze
+		//3. Store
+		//4. Train
 		results.emplace_back(n.benchmark()); 
-		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
-			for (size_t idx = 0; idx < tests.size(); idx++) {
-				n.train(learning_rate, momentum,
-						tests[idx], expectations[idx]);
-		}}
 		bool last = false;
 		era_description current_era(results.back());
 		//catch great learners
@@ -192,10 +165,13 @@ for (auto& momentum : MOMENTUM) {
 			era = MAX_ERAS;
 		if (era+1 >= MAX_ERAS)
 			last = true;
-#ifdef PRINT_CSV
-		csv_printline(current_run, current_era, last);
-#endif
-		if (last) break;
+		//
+		if (last) continue; //not much different than break in this case.
+		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
+			for (size_t idx = 0; idx < tests.size(); idx++) {
+				n.train(learning_rate, momentum,
+						tests[idx], expectations[idx]);
+		}}
 	}
 }
 	return 0;
