@@ -89,15 +89,13 @@ typedef struct sheet_description {
 		threshold=t;
 		neuron_type=n;
 	}
-	void print() {
-		std::cout << learning_rate << "," << momentum << ","
-			<< threshold << ",";
-		if (neuron_type == logistic)
-			std::cout << "logistic";
-		else if (neuron_type == hyperbolic_tanget)
-			std::cout << "tanh";
-		else
-			std::cout << neuron_type;
+	std::vector<csv_cell> getCells() {
+		std::vector<csv_cell> row = {};
+		row.emplace_back(learning_rate);
+		row.emplace_back(momentum);
+		row.emplace_back(threshold);
+		row.emplace_back((int)neuron_type);
+		return std::move(row);
 	}
 } sheet_description;
 
