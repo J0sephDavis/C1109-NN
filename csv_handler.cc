@@ -3,6 +3,8 @@
 #include <sstream>
 #include <stdexcept>
 //==csv_cell==
+csv_cell::csv_cell(int v) { set(v); }
+csv_cell::csv_cell(float v) { set(v); };
 void csv_cell::set(int _val) {
 	value.i = _val;
 	type = INT;

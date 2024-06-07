@@ -5,8 +5,9 @@
 #include <string>
 class csv_cell {
 public:
-	csv_cell() {
-	}
+	csv_cell() {}
+	csv_cell(int v);
+	csv_cell(float v);
 	void set(int _val);
 	void set(float _val);
 	//returns the value as a string
