@@ -117,12 +117,6 @@ typedef struct era_description {
 		}
 		average = sum / current.size();
 	}
-	void print() {
-		for (auto& v : error) std::cout << v << ",";
-		std::cout << max
-			<< "," << sum
-			<< "," << average;
-	}
 	const std::string fields = "e1,e2,e3,e4,avg";
 	std::vector<csv_cell> getCells() {
 		std::vector<csv_cell> row = {};
