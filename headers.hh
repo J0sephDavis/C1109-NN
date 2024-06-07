@@ -13,9 +13,3 @@
 #define THRESHOLD 0.2f
 #define SEED_VAL 2809
 #define BIAS_NEURONS 1
-#define PRINT_CSV
-#ifndef PRINT_CSV
-//#define PRINT_COMPUTE
-//#define PRINT_TRAINING
-//#define PRINT_ERRCON
-#endif

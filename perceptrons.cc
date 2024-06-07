@@ -33,13 +33,7 @@ float perceptron::calculate(const std::vector<float> input) {
 	if (weights.empty()) return activation(weighted_sum);//bias node
 	for (size_t i = 0; i < input.size(); i++) {
 		weighted_sum += input[i] * weights[i];
-#ifdef PRINT_COMPUTE
-		std::cout << "z+= " << input[i] << " * " << weights[i] << "\n";
-#endif
 	}
-#ifdef PRINT_COMPUTE
-	std::cout << "z= " << weighted_sum << "\n";
-#endif
 	return activation(weighted_sum);
 };
 //ACTIVATE
@@ -93,11 +87,6 @@ void perceptron::train(const float momentum, const float learning_rate, std::vec
 			+ (momentum * delta_weights.at(weight_index));
 		weights.at(weight_index) += delta_weight;
 		delta_weights.at(weight_index) = delta_weight;
-#ifdef PRINT_TRAINING
-			std::cout << "dw-" << weight_index
-				<< ":" << delta_weight << ", ";
-			std::cout << "\n";
-#endif
 	}
 }
 void pass_perceptron::train(const float momentum, const float learning_rate, std::vector<float> input) {
@@ -112,11 +101,6 @@ void pass_perceptron::train(const float momentum, const float learning_rate, std
 			+ (momentum * delta_weights.at(weight_index));
 		weights.at(weight_index) += delta_weight;
 		delta_weights.at(weight_index) = delta_weight;
-#ifdef PRINT_TRAINING
-			std::cout << "dw-" << weight_index
-				<< ":" << delta_weight << ", ";
-			std::cout << "\n";
-#endif
 	}
 
 }

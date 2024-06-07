@@ -155,18 +155,6 @@ typedef struct era_description {
 	}
 } era_description;
 
-inline void csv_printline(sheet_description& current_run,
-		era_description& current_era, bool last) {
-	current_run.print();
-	std::cout << ",";
-	current_era.print();
-	std::cout << last << "\n";
-}
-inline void csv_header() {
-	std::cout << "Learning Rate,Momentum,Threshold,Type,e1,e2,e3,e4,";
-	std::cout << "max,sum,average,LAST?\n";
-}
-
 int main(void) {
 	//preparations
 	const int width = 2;
@@ -190,7 +178,6 @@ for (auto& momentum : MOMENTUM) {
 	sheet_description current_run(learning_rate, momentum, THRESHOLD,
 			neuron_type);
 	//
-
 	for (size_t era = 0; era < MAX_ERAS; era++) {
 		results.emplace_back(n.benchmark()); 
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
