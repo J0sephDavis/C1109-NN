@@ -81,21 +81,17 @@ public:
 };
 
 typedef struct sheet_description {
-	float learning_rate, momentum, threshold;
-	perceptron_type neuron_type;
-	sheet_description(float l, float m, float t, perceptron_type n) {
-		learning_rate=l;
-		momentum=m;
-		threshold=t;
-		neuron_type=n;
+	std::vector<csv_cell> cells;
+	sheet_description(float learning_rate, float momentum, float threshold,
+			perceptron_type type) {
+		cells.emplace_back(learning_rate);
+		cells.emplace_back(momentum);
+		cells.emplace_back(threshold);
+		cells.emplace_back((int)type);
 	}
+	const std::string fields = "learning rate,momentum,threshold,type";
 	std::vector<csv_cell> getCells() {
-		std::vector<csv_cell> row = {};
-		row.emplace_back(learning_rate);
-		row.emplace_back(momentum);
-		row.emplace_back(threshold);
-		row.emplace_back((int)neuron_type);
-		return std::move(row);
+		return cells;
 	}
 } sheet_description;
 
