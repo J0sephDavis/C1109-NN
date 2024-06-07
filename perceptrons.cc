@@ -126,3 +126,16 @@ void bias_perceptron::train(const float momentum, const float learning_rate, std
 	output += delta_output;
 	return;
 }
+//TYPE
+std::string perceptron::type() {
+	return "logistic";
+}
+std::string perceptron_htan::type() {
+	return "htan";
+}
+std::string bias_perceptron::type() {
+	return "bias";
+}
+std::string pass_perceptron::type() {
+	return "passthrough";
+}
