@@ -117,15 +117,15 @@ int main(void) {
 	const int depth = 3;
 	size_t run_id = 0; // for naming files
 	auto srand_seed = SEED_VAL; // std::time(NULL)
-	static const std::vector<float> LR {0.25};
-	static const std::vector<float> MOMENTUM {0.25};
+	static const std::vector<float> LR {0.25,0.50,0.75};
+	static const std::vector<float> MOMENTUM {0.25,0.5};
 	static const std::vector<perceptron_type> types
-	{logistic};
+	{logistic, hyperbolic_tanget};
 
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
-	std::string fileName = "/mnt/tmpfs/out" + std::to_string(run_id++) + ".csv";
+	std::string fileName = "/mnt/tmpfs/csv/out" + std::to_string(run_id++) + ".csv";
 	std::vector<std::string> headers = {
 		sheet_description(0,0,0,(perceptron_type)0).fields,
 		era_description({0.0,0.0,0.0,0.0}).fields
