@@ -94,21 +94,19 @@ typedef struct sheet_description {
 } sheet_description;
 
 typedef struct era_description {
-	float sum;
-	float average;
-	float max;
+	float sum = 0.0f;
+	float average = 0.0f;
+	float max = 0.0f;
 	std::vector<csv_cell> cells;
 	const std::string fields = "e1,e2,e3,e4,avg";
 	era_description(std::vector<float> current)
 	{
-		for (size_t idx = 0; idx < current.size(); idx++) {
-			const float& val = current.at(idx);
+		for (const auto& val : current) {
 			if (max < val) max = val;
-			average += val*0.25;
 			sum += val;
 		}
-		average = sum / current.size();
-		for (const auto& e : current) cells.emplace_back(csv_cell(e)); 
+		average = sum / 4;
+		for (const float& e : current) cells.emplace_back(csv_cell(e)); 
 		cells.emplace_back(average);
 	}
 } era_description;
@@ -122,7 +120,7 @@ int main(void) {
 	static const std::vector<float> LR {0.25};
 	static const std::vector<float> MOMENTUM {0.25};
 	static const std::vector<perceptron_type> types
-	{logistic, hyperbolic_tanget};
+	{logistic};
 
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
