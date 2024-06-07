@@ -12,6 +12,8 @@ add_executable(NeuralNet
 	perceptrons.cc
 	perceptrons.hh
 	headers.hh
+	csv_handler.cc
+	csv_handler.hh
 )
 
 target_include_directories(NeuralNet PUBLIC "${PROJECT_BINARY_DIR}")
