@@ -203,10 +203,6 @@ for (auto& momentum : MOMENTUM) {
 		//catch great learners
 		if (current_era.average < THRESHOLD and current_era.max < THRESHOLD)
 			era = MAX_ERAS;
-		//catch bad learners
-		//if (era > MAX_ERAS*0.75 && abs(average-prev_average) < 1.0/10000) {
-		//	era = MAX_ERAS;
-		//}
 		if (era+1 >= MAX_ERAS)
 			last = true;
 #ifdef PRINT_CSV
