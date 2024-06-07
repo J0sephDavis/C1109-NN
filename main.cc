@@ -81,6 +81,7 @@ public:
 };
 
 typedef struct sheet_description {
+	const std::string fields = "learning rate,momentum,threshold,type";
 	std::vector<csv_cell> cells;
 	sheet_description(float learning_rate, float momentum, float threshold,
 			perceptron_type type) {
@@ -89,19 +90,15 @@ typedef struct sheet_description {
 		cells.emplace_back(threshold);
 		cells.emplace_back((int)type);
 	}
-	const std::string fields = "learning rate,momentum,threshold,type";
-	std::vector<csv_cell> getCells() {
-		return cells;
-	}
 } sheet_description;
 
 typedef struct era_description {
 	float sum;
 	float average;
 	float max;
-	std::vector<float> error;
+	std::vector<csv_cell> cells;
+	const std::string fields = "e1,e2,e3,e4,avg";
 	era_description(std::vector<float> current)
-		: error(current)
 	{
 		for (size_t idx = 0; idx < current.size(); idx++) {
 			const float& val = current.at(idx);
@@ -110,14 +107,9 @@ typedef struct era_description {
 			sum += val;
 		}
 		average = sum / current.size();
+		for (const auto& e : current) cells.emplace_back(csv_cell(e)); 
+		cells.emplace_back(average);
 	}
-	const std::string fields = "e1,e2,e3,e4,avg";
-	std::vector<csv_cell> getCells() {
-		std::vector<csv_cell> row = {};
-		for (const auto& e : error) row.emplace_back(csv_cell(e)); 
-		row.emplace_back(average);
-		return std::move(row);
-	}	
 } era_description;
 
 int main(void) {
