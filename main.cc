@@ -34,15 +34,6 @@ public:
 		}
 		return std::move(outputs);
 	}
-	void revealWeights() {
-		for (size_t lid = 0; lid < layers.size(); lid++) {
-			for (size_t nid = 0;nid < layers.at(lid)->neurons.size();
-					nid++) {
-				layers.at(lid)->neurons.at(nid)->revealWeights();
-				std::cout << "\n";
-			}
-		}
-	}
 	void train(const float learning_rate, const float momentum, std::vector<float> test, std::vector<float> label) {
 		//PREP
 		std::vector<std::vector<float>> output = compute(test);
@@ -115,7 +106,6 @@ int main(void) {
 	//preparations
 	const int width = 2;
 	const int depth = 3;
-	size_t run_id = 0; // for naming files
 	auto srand_seed = SEED_VAL; // std::time(NULL)
 	static const std::vector<float> LR {0.25,0.50,0.75};
 	static const std::vector<float> MOMENTUM {0.25,0.5};
@@ -125,7 +115,23 @@ int main(void) {
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
-	std::string fileName = "/mnt/tmpfs/csv/out" + std::to_string(run_id++) + ".csv";
+	std::string neuronType;
+	switch(neuron_type) {
+		case(logistic):
+			neuronType = "LOG";
+			break;
+		case(hyperbolic_tanget):
+			neuronType = "TAN";
+			break;
+		default:
+			neuronType = "UNK";
+			break;
+	}
+	std::string fileName = "/mnt/tmpfs/csv/"
+		+ neuronType
+		+ "-L" + std::to_string(learning_rate)
+		+ "-M" + std::to_string(momentum)
+		+ ".csv";
 	std::vector<std::string> headers = {
 		sheet_description(0,0,0,(perceptron_type)0).fields,
 		era_description({0.0,0.0,0.0,0.0}).fields
