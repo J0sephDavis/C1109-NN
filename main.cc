@@ -107,8 +107,8 @@ int main(void) {
 	const int width = 2;
 	const int depth = 3;
 	auto srand_seed = SEED_VAL; // std::time(NULL)
-	static const std::vector<float> LR {0.25,0.50,0.75};
-	static const std::vector<float> MOMENTUM {0.25,0.5};
+	static const std::vector<float> LR {0.1,0.25,0.50,0.75,0.9};
+	static const std::vector<float> MOMENTUM {0.1,0.25,0.5,0.75,0.9};
 	static const std::vector<perceptron_type> types
 	{logistic, hyperbolic_tanget};
 
@@ -128,8 +128,8 @@ for (auto& momentum : MOMENTUM) {
 			break;
 	}
 	std::string fileName = "/mnt/tmpfs/csv/"
-		+ neuronType
-		+ "-L" + std::to_string(learning_rate)
+		+ neuronType + "/"
+		+ "L" + std::to_string(learning_rate)
 		+ "-M" + std::to_string(momentum)
 		+ ".csv";
 	std::vector<std::string> headers = {
@@ -139,7 +139,6 @@ for (auto& momentum : MOMENTUM) {
 	csv_file DATA(std::move(fileName), std::move(headers));
 
 	std::srand(srand_seed);
-	srand_seed = std::time(NULL);
 	network n(2, width,depth, neuron_type); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description parameterDATA(learning_rate, momentum, THRESHOLD,
