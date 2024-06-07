@@ -12,7 +12,6 @@ class perceptron {
 		//compute sum_i (w_ij * o_ij)
 		float calculate(const std::vector<float> input);
 		virtual float activation(float net_input);
-		virtual void revealWeights();
 		virtual void train(const float momentum,
 				const float learning_rate,
 				std::vector<float> input);
@@ -22,7 +21,6 @@ class perceptron {
 		float error_contribution = 0;
 		float output = 0.0; //the last output of this node.
 		float derivative = 0;
-		float delta_rule_integral = 0;
 	protected:
 		std::vector<float> delta_weights; //changes in weights
 };
@@ -38,7 +36,6 @@ class bias_perceptron : public perceptron {
 public:
 	bias_perceptron();
 	float activation(float net_input) override;
-	void revealWeights() override;
 	void train(const float momentum, const float learning_rate,
 			std::vector<float> input) override;
 	virtual std::string type() override;

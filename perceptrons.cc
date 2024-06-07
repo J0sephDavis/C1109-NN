@@ -62,15 +62,6 @@ float pass_perceptron::activation(float input) {
 	derivative = 1; //do/dz = 1 ?
 	return output;
 }
-//REAVEAL
-void perceptron::revealWeights() {
-	for (auto& w : weights) {
-		std::cout << w << ",";
-	}
-}
-void bias_perceptron::revealWeights() {
-	std::cout << "bias=" << output;
-}
 //TRAIN
 //given an array of inputs, determines the weight changes needed
 void perceptron::train(const float momentum, const float learning_rate, std::vector<float> input) {
