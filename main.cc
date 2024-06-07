@@ -123,7 +123,7 @@ typedef struct era_description {
 			<< "," << sum
 			<< "," << average;
 	}
-	static const std::string fields = "e1,e2,e3,e4,avg";
+	const std::string fields = "e1,e2,e3,e4,avg";
 	std::vector<csv_cell> getCells() {
 		std::vector<csv_cell> row = {};
 		for (const auto& e : error) row.emplace_back(csv_cell(e)); 
