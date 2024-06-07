@@ -15,11 +15,13 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 	}
 	else if (type == passthrough) for (; neuron_index < width;
 			neuron_index++) {
-		std::vector<bool> weight_mask = {};
-		for (size_t i = 0; i < width; i++)
+		//to ensure a passthroughneuron is fed only one value we
+		//provid a weight mask. with an input width of 3, the masks will
+		//be 001 010 100
+		std::vector<bool> weight_mask = {}; 
+		for (size_t i = bias_neurons; i < width; i++)
 			weight_mask.push_back(i==neuron_index);
-		neurons.emplace_back(new pass_perceptron(width, std::move(weight_mask)));
-		// for-each bias, create an empty input in the input. e.g., {1,1} becomes {X,1,1} where X is the only bias.
+		neurons.emplace_back(new pass_perceptron(input_width, std::move(weight_mask)));
 	}
 	else if (type == hyperbolic_tanget) for (; neuron_index < width;
 			neuron_index++) {
@@ -31,8 +33,8 @@ output_layer::output_layer(int width, int input_width, perceptron_type type)
 	: layer(width,input_width,0,type){
 	//
 }
-input_layer::input_layer(size_t width, size_t input_width, size_t bias_neurons)
-	: layer(width, input_width, bias_neurons, passthrough) {
+input_layer::input_layer(size_t input_width, size_t bias_neurons)
+	: layer(input_width, input_width, bias_neurons, passthrough) {
 	//
 }
 //OUTPUT
@@ -45,9 +47,6 @@ std::vector<float> layer::output(std::vector<float> input) {
 	return std::move(out);
 }
 std::vector<float> input_layer::output(std::vector<float> input) {
-	for (size_t i = 0; i < bias_neurons; i++) {
-		input.insert(input.begin(),0); //dead space for bias neuron
-	}
 	std::vector<float> out = {};
 	size_t neuron_index = 0;
 	for (; neuron_index < neurons.size(); neuron_index++) {

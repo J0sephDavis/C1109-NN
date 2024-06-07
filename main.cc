@@ -18,7 +18,7 @@ public:
 		this->depth = _depth;
 		this->width = _width;
 		//generate
-		layers.emplace_back(new input_layer(width, input_width, BIAS_NEURONS));
+		layers.emplace_back(new input_layer(input_width, BIAS_NEURONS));
 		for (int i = 1; i < depth - 1; i++) {
 			layers.emplace_back(new layer(width, layers[i-1]->width,
 						BIAS_NEURONS,neuron_t));

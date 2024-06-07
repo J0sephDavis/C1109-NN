@@ -28,6 +28,6 @@ public:
 };
 class input_layer : public layer {
 public:
-	input_layer(size_t width, size_t input_width, size_t bias);
+	input_layer(size_t input_width, size_t bias);
 	virtual std::vector<float> output(std::vector<float> input) override;
 };
