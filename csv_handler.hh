@@ -24,7 +24,5 @@ class csv_file {
 public:
 	csv_file(std::string file_path, std::vector<std::string> headers);
 	void add_row(std::vector<csv_cell>); //adds a row to the csv
-	//
-	std::vector<std::string> fields;
 	std::ofstream file;
 };
