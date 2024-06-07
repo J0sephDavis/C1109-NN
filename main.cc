@@ -81,7 +81,7 @@ public:
 };
 
 typedef struct sheet_description {
-	const std::string fields = "learning rate,momentum,threshold,type";
+	const std::string fields = "learning rate,momentum,threshold,type,";
 	std::vector<csv_cell> cells;
 	sheet_description(float learning_rate, float momentum, float threshold,
 			perceptron_type type) {
@@ -97,7 +97,7 @@ typedef struct era_description {
 	float average;
 	float max;
 	std::vector<csv_cell> cells;
-	const std::string fields = "e1,e2,e3,e4,avg";
+	const std::string fields = "e1,e2,e3,e4,avg,";
 	era_description(std::vector<float> current)
 	{
 		for (size_t idx = 0; idx < current.size(); idx++) {
