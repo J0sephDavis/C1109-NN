@@ -1,6 +1,7 @@
 #include "csv_handler.hh"
 #include "headers.hh"
 #include "layers.hh"
+#include <string>
 
 const std::vector<std::vector<float>> tests {
 	{0,0},{0,1},
@@ -116,37 +117,44 @@ int main(void) {
 	//preparations
 	const int width = 2;
 	const int depth = 3;
-	size_t run_id = 0;
+	size_t run_id = 0; // for naming files
 	auto srand_seed = SEED_VAL; // std::time(NULL)
-	static const std::vector<float> LR {0.25,0.5,0.75};
-	static const std::vector<float> MOMENTUM {0.25,0.50,0.75};
+	static const std::vector<float> LR {0.25};
+	static const std::vector<float> MOMENTUM {0.25};
 	static const std::vector<perceptron_type> types
 	{logistic, hyperbolic_tanget};
+
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
+	std::string fileName = "/mnt/tmpfs/out" + std::to_string(run_id++) + ".csv";
+	std::vector<std::string> headers = {
+		sheet_description(0,0,0,(perceptron_type)0).fields,
+		era_description({0.0,0.0,0.0,0.0}).fields
+	};
+	csv_file DATA(std::move(fileName), std::move(headers));
+
 	std::srand(srand_seed);
 	srand_seed = std::time(NULL);
 	network n(2, width,depth, neuron_type); //the network
 	std::vector<std::vector<float>> results = {};
-	sheet_description current_run(learning_rate, momentum, THRESHOLD,
+	sheet_description parameterDATA(learning_rate, momentum, THRESHOLD,
 			neuron_type);
 	//
 	for (size_t era = 0; era < MAX_ERAS; era++) {
 		//1. Compute output
-		//2. Analyze
-		//3. Store
-		//4. Train
 		results.emplace_back(n.benchmark()); 
-		bool last = false;
-		era_description current_era(results.back());
-		//catch great learners
-		if (current_era.average < THRESHOLD and current_era.max < THRESHOLD)
-			era = MAX_ERAS;
-		if (era+1 >= MAX_ERAS)
-			last = true;
-		//
-		if (last) continue; //not much different than break in this case.
+		//2. Analyze
+		era_description eraDATA(results.back());
+		//3. Store
+		std::vector<csv_cell> cells;
+		cells.insert(cells.end(), parameterDATA.cells.begin(), parameterDATA.cells.end());
+		cells.insert(cells.end(), eraDATA.cells.begin(), eraDATA.cells.end());
+		DATA.add_row(std::move(cells));
+		//4. Train
+		//Good learners end early
+		if (eraDATA.average < THRESHOLD and eraDATA.max < THRESHOLD)
+			break;
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
 				n.train(learning_rate, momentum,
