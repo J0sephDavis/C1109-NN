@@ -5,7 +5,6 @@
 const std::vector<std::vector<float>> tests {
 	{0,0},{0,1},
 	{1,0},{1,1}
-
 };
 const std::vector<std::vector<float>> expectations {
 	{0},{1},{1},{0}
