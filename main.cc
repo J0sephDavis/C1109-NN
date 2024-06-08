@@ -105,7 +105,9 @@ int main(void) {
 	//preparations
 	const int width = 2;
 	const int depth = 3;
-	auto srand_seed = SEED_VAL; // std::time(NULL)
+#ifdef SEED_VAL
+	auto srand_seed = SEED_VAL;
+#endif
 	static const std::vector<float> LR {0.1,0.25,0.50,0.75,0.9};
 	static const std::vector<float> MOMENTUM {0.1,0.25,0.5,0.75,0.9};
 	static const std::vector<perceptron_type> types
@@ -138,7 +140,11 @@ for (auto& momentum : MOMENTUM) {
 	};
 	csv_file DATA(std::move(fileName.str()), std::move(headers));
 
+#ifdef SEED_VAL
 	std::srand(srand_seed);
+#elif
+	std::srand(std::time(NULL));
+#endif
 	network n(2, width,depth, neuron_type); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description parameterDATA(learning_rate, momentum, THRESHOLD,
