@@ -67,6 +67,40 @@ public:
 		}
 		return std::move(results);
 	}
+	std::string weight_header() const {
+		std::stringstream out;
+		for (size_t lid = 0; lid < layers.size(); lid++) {
+			const auto& neurons = layers.at(lid)->neurons;
+			for (size_t nid = 0; nid < neurons.size();nid++) {
+				const auto& neuron = neurons.at(nid);
+				if (neuron->type == bias) {
+					out << "L" << lid << "N" << nid << "B" << neuron->output << ",";
+				}
+				else {
+					const auto& weights = neuron->weights;
+					for (size_t wid = 0; wid < weights.size(); wid++) {
+						out << "L" << lid << "N" << nid << "W" << wid << ",";
+					}
+				}
+			}
+		}
+		return out.str();
+	}
+	std::vector<csv_cell> weights() {
+		std::vector<csv_cell> rv = {};
+		for (const auto& layer : layers) {
+			for (const auto& neuron : layer->neurons) {
+				switch(neuron->type) {
+					case(bias):
+						rv.push_back(neuron->output);
+						break;
+					default:
+						rv.insert(rv.end(), neuron->weights.begin(), neuron->weights.end());
+				}
+			}
+		}
+		return std::move(rv);
+	}
 	int width,depth;
 	std::vector<std::shared_ptr<layer>> layers;
 };
@@ -108,10 +142,10 @@ int main(void) {
 #ifdef SEED_VAL
 	auto srand_seed = SEED_VAL;
 #endif
-	static const std::vector<float> LR {0.1,0.25,0.50,0.75,0.9};
-	static const std::vector<float> MOMENTUM {0.1,0.25,0.5,0.75,0.9};
+	static const std::vector<float> LR {0.25};
+	static const std::vector<float> MOMENTUM {0.1};
 	static const std::vector<perceptron_type> types
-	{logistic, hyperbolic_tanget};
+	{logistic, hyperbolic_tangent};
 
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
@@ -121,25 +155,13 @@ for (auto& momentum : MOMENTUM) {
 		case(logistic):
 			neuronType = "LOG";
 			break;
-		case(hyperbolic_tanget):
+		case(hyperbolic_tangent):
 			neuronType = "TAN";
 			break;
 		default:
 			neuronType = "UNK";
 			break;
 	}
-	std::stringstream fileName;
-	fileName << "/mnt/tmpfs/csv/"
-		<< neuronType + "/"
-		<< "L" << std::fixed << std::setprecision(2) << learning_rate
-		<< "M" << std::fixed << std::setprecision(2) << momentum
-		<< ".csv";
-	std::vector<std::string> headers = {
-		sheet_description(0,0,0,(perceptron_type)0).fields,
-		era_description({0.0,0.0,0.0,0.0}).fields
-	};
-	csv_file DATA(std::move(fileName.str()), std::move(headers));
-
 #ifdef SEED_VAL
 	std::srand(srand_seed);
 #elif
@@ -150,6 +172,19 @@ for (auto& momentum : MOMENTUM) {
 	sheet_description parameterDATA(learning_rate, momentum, THRESHOLD,
 			neuron_type);
 	//
+	std::stringstream fileName;
+	fileName << "/mnt/tmpfs/csv/"
+		<< neuronType + "/"
+		<< "L" << std::fixed << std::setprecision(2) << learning_rate
+		<< "M" << std::fixed << std::setprecision(2) << momentum
+		<< ".csv";
+	std::vector<std::string> headers = {
+		sheet_description(0,0,0,(perceptron_type)0).fields,
+		era_description({0.0,0.0,0.0,0.0}).fields,
+		n.weight_header(),
+	};
+	csv_file DATA(std::move(fileName.str()), std::move(headers));
+
 	for (size_t era = 0; era < MAX_ERAS; era++) {
 		//1. Compute output
 		results.emplace_back(n.benchmark()); 
@@ -159,6 +194,8 @@ for (auto& momentum : MOMENTUM) {
 		std::vector<csv_cell> cells;
 		cells.insert(cells.end(), parameterDATA.cells.begin(), parameterDATA.cells.end());
 		cells.insert(cells.end(), eraDATA.cells.begin(), eraDATA.cells.end());
+		const auto weights = n.weights();
+		cells.insert(cells.end(), weights.begin(), weights.end());
 		DATA.add_row(std::move(cells));
 		//4. Train
 		//Good learners end early
