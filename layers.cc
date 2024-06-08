@@ -23,7 +23,7 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 			weight_mask.push_back(i==neuron_index);
 		neurons.emplace_back(new pass_perceptron(input_width, std::move(weight_mask)));
 	}
-	else if (type == hyperbolic_tanget) for (; neuron_index < width;
+	else if (type == hyperbolic_tangent) for (; neuron_index < width;
 			neuron_index++) {
 		neurons.emplace_back(new perceptron_htan(input_width));
 	}

@@ -9,14 +9,16 @@ perceptron::perceptron(int count_inputs, bool rand_weights) {
 		weights.push_back(1);
 		delta_weights.push_back(0);
 	}
+	type = logistic;
 }
 perceptron_htan::perceptron_htan(int count_inputs, bool rand_weights)
 	: perceptron(std::move(count_inputs), std::move(rand_weights)) {
-		//
-}
+		type = hyperbolic_tangent;
+	}
 bias_perceptron::bias_perceptron() : perceptron(0) {
 		output = 1;
 		derivative = 1;
+		type = bias;
 }
 pass_perceptron::pass_perceptron(int net_input_width, std::vector<bool> weight_mask)
 	: perceptron(net_input_width, false) {
@@ -26,6 +28,7 @@ pass_perceptron::pass_perceptron(int net_input_width, std::vector<bool> weight_m
 		for (size_t index = 0; index < weight_mask.size(); index++)
 			if (weight_mask[index] == false)
 				weights.at(index) = 0;
+	type = passthrough;
 }
 //CALCULATE
 float perceptron::calculate(const std::vector<float> input) {
@@ -102,15 +105,18 @@ void bias_perceptron::train(const float momentum, const float learning_rate, std
 	return;
 }
 //TYPE
-std::string perceptron::type() {
-	return "logistic";
-}
-std::string perceptron_htan::type() {
-	return "htan";
-}
-std::string bias_perceptron::type() {
-	return "bias";
-}
-std::string pass_perceptron::type() {
-	return "passthrough";
+std::string perceptron::type_str() {
+	switch (type) {
+		case (logistic):
+			return "logistic";
+		case(bias):
+			return "bias";
+		case(passthrough):
+			return "passthrough";
+		case(hyperbolic_tangent):
+			return "htan";
+		case(UNDEFINED):
+		default:
+			return "UNK";
+	}
 }
