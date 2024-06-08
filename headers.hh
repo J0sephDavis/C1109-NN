@@ -7,6 +7,9 @@
 #include <memory> //unique_ptr
 #include <math.h>
 #include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <string>
 
 #define MAX_ERAS 10000
 #define EPOCHS 1

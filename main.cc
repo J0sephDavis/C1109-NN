@@ -1,7 +1,6 @@
 #include "csv_handler.hh"
 #include "headers.hh"
 #include "layers.hh"
-#include <string>
 
 const std::vector<std::vector<float>> tests {
 	{0,0},{0,1},
@@ -127,16 +126,17 @@ for (auto& momentum : MOMENTUM) {
 			neuronType = "UNK";
 			break;
 	}
-	std::string fileName = "/mnt/tmpfs/csv/"
-		+ neuronType + "/"
-		+ "L" + std::to_string(learning_rate)
-		+ "-M" + std::to_string(momentum)
-		+ ".csv";
+	std::stringstream fileName;
+	fileName << "/mnt/tmpfs/csv/"
+		<< neuronType + "/"
+		<< "L" << std::fixed << std::setprecision(2) << learning_rate
+		<< "M" << std::fixed << std::setprecision(2) << momentum
+		<< ".csv";
 	std::vector<std::string> headers = {
 		sheet_description(0,0,0,(perceptron_type)0).fields,
 		era_description({0.0,0.0,0.0,0.0}).fields
 	};
-	csv_file DATA(std::move(fileName), std::move(headers));
+	csv_file DATA(std::move(fileName.str()), std::move(headers));
 
 	std::srand(srand_seed);
 	network n(2, width,depth, neuron_type); //the network
