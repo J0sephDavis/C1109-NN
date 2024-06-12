@@ -1,10 +1,10 @@
 #include "headers.hh"
 enum perceptron_type {
+	UNDEFINED,
 	logistic,
 	bias,
 	passthrough,
-	hyperbolic_tangent,
-	UNDEFINED
+	hyperbolic_tangent
 };
 //
 class perceptron {
