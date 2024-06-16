@@ -6,9 +6,11 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 	this->input_width = _input_width;
 	this->bias_neurons = _bias_neurons;
 	size_t neuron_index = 0;
+	//first, initialize all bias neurons.
 	for (; neuron_index < bias_neurons; neuron_index++) {
 		neurons.emplace_back(new bias_perceptron());
 	}
+	//Then, initialize neurons of the layer type
 	if (type == logistic) for (; neuron_index < width;
 			neuron_index++) {
 		neurons.emplace_back(new perceptron(input_width));
@@ -21,7 +23,8 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 		std::vector<bool> weight_mask = {}; 
 		for (size_t i = bias_neurons; i < width; i++)
 			weight_mask.push_back(i==neuron_index);
-		neurons.emplace_back(new pass_perceptron(input_width, std::move(weight_mask)));
+		neurons.emplace_back(new pass_perceptron(input_width,
+			std::move(weight_mask)));
 	}
 	else if (type == hyperbolic_tangent) for (; neuron_index < width;
 			neuron_index++) {
@@ -95,18 +98,15 @@ void output_layer::update_err_contrib(std::vector<float> label,
 }
 //TRAIN
 /* Calls the perceptrons training function of each neuron. */
-void layer::train(std::vector<float> input, const float learning_rate,
-		const float momentum) {
+void layer::train(std::vector<float> input, const hyperparams& params) {
 	for (auto& neuron : neurons) {
-		neuron->train(momentum, learning_rate, (input));
-
+		neuron->train(params, (input));
 	}
 }
-void output_layer::train(std::vector<float> input, const float learning_rate,
-		const float momentum) {
+void output_layer::train(std::vector<float> input, const hyperparams& params) {
 	//get error contribution of output nodes
 	for (size_t j = 0; j < neurons.size(); j++) {
 		const auto& neuron = neurons.at(j);
-		neuron->train(momentum, learning_rate, (input));
+		neuron->train(params, input);
 	}
 }
