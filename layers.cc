@@ -21,6 +21,14 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 			neuron_index++) {
 		neurons.emplace_back(new perceptron_htan(input_width));
 	}
+	else if (type == selection_pass) for(; neuron_index < width; neuron_index++) {
+		std::vector<bool> selector(input_width);
+		for (size_t i = 0; i < input_width; i++) {
+			if (i == neuron_index) selector.push_back(true);
+			else selector.push_back(false);
+		}
+		neurons.emplace_back(new select_perceptron(input_width, std::move(selector)));
+	}
 	else throw std::runtime_error("INVALID ACTIVATION TYPE");
 };
 output_layer::output_layer(int width, int input_width, perceptron_type type)
@@ -28,7 +36,7 @@ output_layer::output_layer(int width, int input_width, perceptron_type type)
 	//
 }
 input_layer::input_layer(size_t input_width, size_t bias_neurons)
-	: layer(input_width, input_width, bias_neurons, passthrough) {
+	: layer(input_width, input_width, bias_neurons, selection_pass) {
 	//
 }
 //OUTPUT
