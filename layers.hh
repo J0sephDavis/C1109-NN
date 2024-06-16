@@ -8,8 +8,7 @@ public:
 	float get_associated_err(size_t neuron_j);
 	virtual void update_err_contrib(std::vector<float> label,
 			std::shared_ptr<layer> upper_layer);
-	virtual void train(std::vector<float>input, const float learning_rate,
-			const float momentum);
+	virtual void train(std::vector<float>input, const hyperparams& params);
 public:
 	std::vector<std::shared_ptr<perceptron>> neurons;
 	size_t width; //neurons in layer
@@ -23,8 +22,7 @@ public:
 			perceptron_type type = logistic);
 	void update_err_contrib(std::vector<float> label,
 				std::shared_ptr<layer> upper_layer) override;
-	void train(std::vector<float> input, const float learning_rate,
-			const float momentum) override;
+	void train(std::vector<float> input, const hyperparams& params) override;
 };
 class input_layer : public layer {
 public:
