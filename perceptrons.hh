@@ -74,3 +74,12 @@ public:
 	//activation function f(z) = z
 	float activation(float net_input) override;
 };
+
+// prevents training of unselected weights
+class select_perceptron : public pass_perceptron {
+public:
+	select_perceptron(size_t net_input_width, std::vector<bool> selection_vector);
+	std::vector<bool> selection_vector;
+	//only train the selected inputs weights
+	void train(const hyperparams& params, std::vector<float> input) override;
+}

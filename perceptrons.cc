@@ -25,6 +25,11 @@ pass_perceptron::pass_perceptron(int net_input_width)
 	derivative = 1; //set again during activation()
 	type = passthrough;
 }
+select_perceptron::select_perceptron(size_t net_input_width, std::vector<bool> selection_vector):
+	pass_perceptron(net_input_width),
+	selection_vector(std::move(selection_vector)) {
+		
+	}
 //CALCULATE
 float perceptron::calculate(const std::vector<float> input) {
 	float weighted_sum = 0;
@@ -65,6 +70,15 @@ void perceptron::train(const hyperparams& params, std::vector<float> input) {
 	for (size_t weight_index = 0; weight_index < weights.size(); weight_index++) {
 		float delta_weight = calc_dw(params, error_contribution,
 			input[weight_index], delta_weights[weight_index]);
+		weights.at(weight_index) += delta_weight;
+		delta_weights.at(weight_index) = delta_weight;
+	}
+}
+void select_perceptron::train(const hyperparams& params, std::vector<float> input) {
+	for (size_t weight_index = 0; weight_index < weights.size(); weight_index++) {
+		if (selection_vector.at(weight_index) == false) continue; //skip training
+		float delta_weight = calc_dw(params, error_contribution,
+				input[weight_index], delta_weights[weight_index]);
 		weights.at(weight_index) += delta_weight;
 		delta_weights.at(weight_index) = delta_weight;
 	}
