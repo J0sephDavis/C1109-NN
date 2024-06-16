@@ -12,7 +12,8 @@ const std::vector<std::vector<float>> expectations {
 
 class network {
 public:
-	network(int input_width, int _width, int _depth, perceptron_type neuron_t) {
+	network(const float learning_rate, const float momentum,int input_width, int _width, int _depth, perceptron_type neuron_t):
+	params(std::move(learning_rate),std::move(momentum)) {
 		this->depth = _depth;
 		this->width = _width;
 		//generate
@@ -32,7 +33,7 @@ public:
 		}
 		return std::move(outputs);
 	}
-	void train(const float learning_rate, const float momentum, std::vector<float> test, std::vector<float> label) {
+	void train(std::vector<float> test, std::vector<float> label) {
 		//PREP
 		std::vector<std::vector<float>> output = compute(test);
 		std::vector<float> input_values = {};
@@ -55,7 +56,7 @@ public:
 				layer_index--) {
 			if (layer_index == 0) input_values = test;
 			else input_values = output.at(layer_index-1);
-			layers.at(layer_index)->train(input_values, learning_rate, momentum);
+			layers.at(layer_index)->train(input_values, params);
 		}
 	}
 	std::vector<float> benchmark() {
@@ -102,6 +103,7 @@ public:
 	}
 	int width,depth;
 	std::vector<std::shared_ptr<layer>> layers;
+	const hyperparams params; //hyper parameters that define the training
 };
 
 typedef struct sheet_description {
@@ -166,7 +168,7 @@ for (auto& momentum : MOMENTUM) {
 #elif
 	std::srand(std::time(NULL));
 #endif
-	network n(2, width,depth, neuron_type); //the network
+	network n(learning_rate, momentum, 2, width,depth, neuron_type); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description parameterDATA(learning_rate, momentum, THRESHOLD,
 			neuron_type);
@@ -177,6 +179,7 @@ for (auto& momentum : MOMENTUM) {
 		<< "L" << std::fixed << std::setprecision(2) << learning_rate
 		<< "M" << std::fixed << std::setprecision(2) << momentum
 		<< ".csv";
+	std::cout << "FILENAME: " << fileName.str() << "\n";
 	std::vector<std::string> headers = {
 		sheet_description(0,0,0,(perceptron_type)0).fields,
 		era_description({0.0,0.0,0.0,0.0}).fields,
@@ -202,8 +205,7 @@ for (auto& momentum : MOMENTUM) {
 			break;
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
 			for (size_t idx = 0; idx < tests.size(); idx++) {
-				n.train(learning_rate, momentum,
-						tests[idx], expectations[idx]);
+				n.train(tests[idx], expectations[idx]);
 		}}
 	}
 }
