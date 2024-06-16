@@ -71,7 +71,7 @@ private:
 
 class pass_perceptron : public perceptron {
 public:
-	pass_perceptron(int net_input_width);
+	pass_perceptron(size_t net_input_width);
 	//activation function f(z) = z
 	float activation(float net_input) override;
 };

@@ -20,7 +20,7 @@ bias_perceptron::bias_perceptron() : perceptron(0) {
 		derivative = 1;
 		type = bias;
 }
-pass_perceptron::pass_perceptron(int net_input_width)
+pass_perceptron::pass_perceptron(size_t net_input_width)
 	: perceptron(net_input_width, false) {
 	derivative = 1; //set again during activation()
 	type = passthrough;
