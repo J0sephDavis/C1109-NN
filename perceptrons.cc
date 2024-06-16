@@ -28,7 +28,7 @@ pass_perceptron::pass_perceptron(int net_input_width)
 select_perceptron::select_perceptron(size_t net_input_width, std::vector<bool> selection_vector):
 	pass_perceptron(net_input_width),
 	selection_vector(std::move(selection_vector)) {
-		
+		type = selection_pass;
 	}
 //CALCULATE
 float perceptron::calculate(const std::vector<float> input) {
@@ -100,6 +100,8 @@ const std::string perceptron::type_str() const {
 			return "passthrough";
 		case(hyperbolic_tangent):
 			return "htan";
+		case(selection_pass):
+			return "selection";
 		case(UNDEFINED):
 		default:
 			return "UNK";

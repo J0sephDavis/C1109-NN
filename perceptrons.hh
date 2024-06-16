@@ -4,7 +4,8 @@ enum perceptron_type {
 	logistic,
 	bias,
 	passthrough,
-	hyperbolic_tangent
+	hyperbolic_tangent,
+	selection_pass
 };
 typedef struct hyperparams {
 	hyperparams(const float learning_rate, const float momentum) {
@@ -82,4 +83,4 @@ public:
 	std::vector<bool> selection_vector;
 	//only train the selected inputs weights
 	void train(const hyperparams& params, std::vector<float> input) override;
-}
+};
