@@ -19,8 +19,7 @@ public:
 		//generate
 		layers.emplace_back(new input_layer(input_width, BIAS_NEURONS));
 		for (int i = 1; i < depth - 1; i++) {
-			layers.emplace_back(new layer(width, layers[i-1]->width,
-						BIAS_NEURONS,neuron_t));
+			layers.emplace_back(new layer(width, layers[i-1]->width, BIAS_NEURONS,neuron_t));
 		}
 		layers.emplace_back(new output_layer(1, layers[depth-2]->width, neuron_t)); //single output node
 	}
