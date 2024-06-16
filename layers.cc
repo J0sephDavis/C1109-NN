@@ -2,6 +2,8 @@
 //INITIALIZE
 layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 		perceptron_type type) {
+	//width is the number of neurons of the passed type to create. bias neurons are tacked onto the width during initialization, not when calling the constructor
+	//input width is the width of the previous layer
 	this->width = _width+_bias_neurons;
 	this->input_width = _input_width;
 	this->bias_neurons = _bias_neurons;
@@ -22,8 +24,9 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 		neurons.emplace_back(new perceptron_htan(input_width));
 	}
 	else if (type == selection_pass) for(; neuron_index < width; neuron_index++) {
+		//selector must have a length equal to the input that will be passed to it
 		std::vector<bool> selector(input_width);
-		for (size_t i = bias_neurons; i < width; i++) {
+		for (size_t i = 0; i < input_width; i++) {
 			if (i == neuron_index) selector.push_back(true);
 			else selector.push_back(false);
 		}
@@ -33,7 +36,7 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 };
 output_layer::output_layer(int width, int input_width, perceptron_type type)
 	: layer(width,input_width,0,type){
-	//
+	//NO BIAS NEURONS
 }
 input_layer::input_layer(size_t input_width, size_t bias_neurons)
 	: layer(input_width, input_width, bias_neurons, selection_pass) {
