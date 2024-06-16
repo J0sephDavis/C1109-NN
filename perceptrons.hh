@@ -70,7 +70,7 @@ private:
 
 class pass_perceptron : public perceptron {
 public:
-	pass_perceptron(int net_input_width, std::vector<bool> weight_mask = {});
+	pass_perceptron(int net_input_width);
+	//activation function f(z) = z
 	float activation(float net_input) override;
-	void train(const hyperparams& params, std::vector<float> input) override;
 };

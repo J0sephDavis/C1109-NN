@@ -20,14 +20,9 @@ bias_perceptron::bias_perceptron() : perceptron(0) {
 		derivative = 1;
 		type = bias;
 }
-pass_perceptron::pass_perceptron(int net_input_width, std::vector<bool> weight_mask)
+pass_perceptron::pass_perceptron(int net_input_width)
 	: perceptron(net_input_width, false) {
-	derivative = 1;
-	//if a weight mask is provided. Clear all values where the mask is 0
-	if (weight_mask.empty() == false)
-		for (size_t index = 0; index < weight_mask.size(); index++)
-			if (weight_mask[index] == false)
-				weights.at(index) = 0;
+	derivative = 1; //set again during activation()
 	type = passthrough;
 }
 //CALCULATE
@@ -70,18 +65,6 @@ void perceptron::train(const hyperparams& params, std::vector<float> input) {
 	for (size_t weight_index = 0; weight_index < weights.size(); weight_index++) {
 		float delta_weight = calc_dw(params, error_contribution,
 			input[weight_index], delta_weights[weight_index]);
-		weights.at(weight_index) += delta_weight;
-		delta_weights.at(weight_index) = delta_weight;
-	}
-}
-void pass_perceptron::train(const hyperparams& params, std::vector<float> input) {
-	for (size_t weight_index = 0; weight_index < weights.size(); weight_index++) {
-		//skip the weights intentionally left blank.
-		//Could potentially be a problem if training gets
-		//a weights set to 0, but unlikely?
-		if (weights.at(weight_index) == 0) continue;
-		float delta_weight = calc_dw(params, error_contribution,
-				input[weight_index], delta_weights[weight_index]);
 		weights.at(weight_index) += delta_weight;
 		delta_weights.at(weight_index) = delta_weight;
 	}

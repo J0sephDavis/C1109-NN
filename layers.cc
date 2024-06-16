@@ -11,20 +11,11 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 		neurons.emplace_back(new bias_perceptron());
 	}
 	//Then, initialize neurons of the layer type
-	if (type == logistic) for (; neuron_index < width;
-			neuron_index++) {
+	if (type == logistic) for (; neuron_index < width; neuron_index++) {
 		neurons.emplace_back(new perceptron(input_width));
 	}
-	else if (type == passthrough) for (; neuron_index < width;
-			neuron_index++) {
-		//to ensure a passthroughneuron is fed only one value we
-		//provid a weight mask. with an input width of 3, the masks will
-		//be 001 010 100
-		std::vector<bool> weight_mask = {}; 
-		for (size_t i = bias_neurons; i < width; i++)
-			weight_mask.push_back(i==neuron_index);
-		neurons.emplace_back(new pass_perceptron(input_width,
-			std::move(weight_mask)));
+	else if (type == passthrough) for (; neuron_index < width; neuron_index++) {
+		neurons.emplace_back(new pass_perceptron(input_width));
 	}
 	else if (type == hyperbolic_tangent) for (; neuron_index < width;
 			neuron_index++) {
