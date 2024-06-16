@@ -23,7 +23,7 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 	}
 	else if (type == selection_pass) for(; neuron_index < width; neuron_index++) {
 		std::vector<bool> selector(input_width);
-		for (size_t i = 0; i < input_width; i++) {
+		for (size_t i = bias_neurons; i < width; i++) {
 			if (i == neuron_index) selector.push_back(true);
 			else selector.push_back(false);
 		}
