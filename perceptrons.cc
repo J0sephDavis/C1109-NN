@@ -33,7 +33,7 @@ select_perceptron::select_perceptron(size_t net_input_width, std::vector<bool> s
 //CALCULATE
 float perceptron::calculate(const std::vector<float> input) {
 	float weighted_sum = 0;
-	if (weights.empty()) return activation(weighted_sum);//bias node
+	if (type==bias) return activation(weighted_sum);
 	for (size_t i = 0; i < input.size(); i++) {
 		weighted_sum += input[i] * weights[i];
 	}
