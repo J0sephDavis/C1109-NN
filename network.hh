@@ -21,7 +21,7 @@ public:
 //==vars==
 	size_t width,depth;
 	std::vector<std::shared_ptr<layer>> layers;
-	const hyperparams params; //hyper parameters that define the training
+	const hyperparams params; 
 	//training data
 	std::vector<std::shared_ptr<training_instance>> trainingData;
 	//testing data
