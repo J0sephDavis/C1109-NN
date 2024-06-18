@@ -19,16 +19,4 @@ public:
 	std::vector<std::shared_ptr<layer>> layers;
 	const hyperparams params; //hyper parameters that define the training
 };
-
-typedef struct sheet_description {
-	const std::string fields = "learning rate,momentum,threshold,type";
-	std::vector<csv_cell> cells;
-	sheet_description(float learning_rate, float momentum, float threshold,
-			perceptron_type type) {
-		cells.emplace_back(learning_rate);
-		cells.emplace_back(momentum);
-		cells.emplace_back(threshold);
-		cells.emplace_back((int)type);
-	}
-} sheet_description;
 #endif

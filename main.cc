@@ -5,10 +5,6 @@
 #include <cstdlib>
 #include <ctime>
 
-#define MAX_ERAS 10000
-#define EPOCHS 1
-#define THRESHOLD 0.2f
-#define SEED_VAL 9350
 const std::vector<std::vector<float>> tests {
 	{0,0},{0,1},
 	{1,0},{1,1}
@@ -33,6 +29,18 @@ typedef struct era_description {
 		cells.emplace_back(average);
 	}
 } era_description;
+
+typedef struct sheet_description {
+	const std::string fields = "learning rate,momentum,threshold,type";
+	std::vector<csv_cell> cells;
+	sheet_description(float learning_rate, float momentum, float threshold,
+			perceptron_type type) {
+		cells.emplace_back(learning_rate);
+		cells.emplace_back(momentum);
+		cells.emplace_back(threshold);
+		cells.emplace_back((int)type);
+	}
+} sheet_description;
 
 int main(void) {
 	//preparations
