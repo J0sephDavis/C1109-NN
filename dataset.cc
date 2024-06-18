@@ -4,7 +4,9 @@ training_instance::training_instance(size_t instance_len, size_t label_len, std:
 	std::copy_n(row.begin(), instance_len+1, data.begin());
 	std::copy_n(row.begin()+instance_len, label_len, label.begin());
 }
-data_file::data_file(size_t instance_len, size_t label_len, std::filesystem::path filePath) {
+data_file::data_file(size_t _instance_len, size_t _label_len, std::filesystem::path filePath) {
+	this->instance_len = std::move(_instance_len);
+	this->label_len = std::move(_label_len);
 	std::ifstream file(filePath);
 	if (file.bad()) throw std::runtime_error("Failed to open // data_file.bad()");
 	std::cout << "File: " << filePath.string() << "\n";

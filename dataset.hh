@@ -19,5 +19,6 @@ class data_file {
 public:
 	data_file(size_t instance_len, size_t label_len, std::filesystem::path filePath);
 	std::vector<training_instance> data;
+	size_t instance_len, label_len;
 };
 #endif
