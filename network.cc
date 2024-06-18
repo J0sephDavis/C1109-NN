@@ -31,7 +31,7 @@ void network::train(std::vector<float> test, std::vector<float> label) {
 	for (int layer_index = layers.size()-1; layer_index >= 0;
 			layer_index--) {
 		//prepare layer input
-		if (layer_index == 0) 		//INPUT layer
+		if (layer_index == 0) 
 			input_values = test;
 		else {
 			input_values = output.at(layer_index-1);
@@ -85,7 +85,9 @@ std::vector<csv_cell> network::weights() {
 					rv.push_back(neuron->output);
 					break;
 				default:
-					rv.insert(rv.end(), neuron->weights.begin(), neuron->weights.end());
+					rv.insert(rv.end(),
+						neuron->weights.begin(),
+						neuron->weights.end());
 			}
 		}
 	}
