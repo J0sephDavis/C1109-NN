@@ -7,13 +7,19 @@ project(NeuralNet
 )
 add_executable(NeuralNet 
 	main.cc
+	headers.hh
+	
 	layers.hh
 	layers.cc
+	
 	perceptrons.cc
 	perceptrons.hh
-	headers.hh
+	
 	csv_handler.cc
 	csv_handler.hh
+
+	network.cc
+	network.hh
 )
 
 target_include_directories(NeuralNet PUBLIC "${PROJECT_BINARY_DIR}")
