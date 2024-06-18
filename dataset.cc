@@ -12,7 +12,7 @@ data_file::data_file(size_t instance_len, size_t label_len, std::filesystem::pat
 	while (true) {
 		std::vector<float> row(row_len);
 		std::string buff;
-		for (size_t idx = 0; i < row_len-1; i++) {
+		for (size_t idx = 0; i < row_len-1; idx++) {
 			std::getline(file,buff,','); //get n-1 comma separated values
 			//eof->incomplete/non-existant record. do not save this one
 			if (file.eof()) break;
