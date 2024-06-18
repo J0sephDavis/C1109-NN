@@ -7,7 +7,7 @@ project(NeuralNet
 )
 add_executable(NeuralNet 
 	main.cc
-	headers.hh
+	definitions.hh
 	
 	layers.hh
 	layers.cc
