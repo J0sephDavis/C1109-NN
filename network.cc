@@ -1,4 +1,5 @@
 #include "network.hh"
+#include "dataset.hh"
 network::network(const hyperparams params, perceptron_type neuron_t,
 	const data_file& df,
 	size_t _width, size_t _depth)
@@ -14,6 +15,15 @@ network::network(const hyperparams params, perceptron_type neuron_t,
 	}
 	 //single output node
 	layers.emplace_back(new output_layer(df.label_len, layers[depth-2]->width, neuron_t));
+	//get some testing data
+	for (size_t i = 0; i < df.data.size() * 0.2; i++) {
+		auto random_index = std::rand() % df.data.size();
+		testingData.push_back(df.data.at(random_index));
+	}
+	//train on whole dataset for now
+	for (const auto& sp_inst : df.data) {
+		trainingData.push_back(sp_inst);
+	}
 }
 
 std::vector<std::vector<float>> network::compute(std::vector<float> input) {
@@ -39,10 +49,12 @@ void network::train_on_instance(size_t instance_id) {
 	output_data.insert(output_data.begin(), trainingData.at(instance_id)->data);
 	//Backpropagate
 	//1. err contribution
-	for (size_t layer_index = layers.size(); layer_index != 0; layer_index--) {
+	for (size_t layer_index = layers.size()-1; layer_index != 0; layer_index--) {
 		std::shared_ptr<layer> upper_layer = NULL;
-		if (layer_index+1 != layers.size())
+		if (layer_index+1 < layers.size()) {
 			upper_layer = layers.at(layer_index+1);
+
+		}
 		//update the error contribution
 		layers.at(layer_index)->update_err_contrib(
 				std::cref(trainingData.at(instance_id)->label), upper_layer);
