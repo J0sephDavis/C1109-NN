@@ -20,6 +20,9 @@ add_executable(NeuralNet
 
 	network.cc
 	network.hh
+
+	dataset.cc
+	dataset.hh
 )
 
 target_include_directories(NeuralNet PUBLIC "${PROJECT_BINARY_DIR}")
