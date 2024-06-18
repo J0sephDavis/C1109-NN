@@ -51,11 +51,19 @@ void network::train(std::vector<float> test, std::vector<float> label) {
 		layers.at(layer_index)->train(input_values, params);
 	}
 }
+/*TODO for classification, return a vector with an output len equal to
+ * the length of the test label. Each index will refer to each classification
+ * so that the model can be properly graded*/
 std::vector<float> network::benchmark() {
 	std::vector<float> results = {};
-	for (size_t i = 0; i < tests.size(); i++){
-		float actual = compute(tests[i]).back()[0];
-		results.push_back(abs(expectations[i][0]-actual));
+	for (const auto& test : testingData) {
+		std::vector<float> actual = std::move(compute(test->data).back());
+		//TODO warn if actual.size() != test.label.size()
+		float average = 0.0f;
+		for (size_t idx = 0 ; idx < actual.size(); idx++)
+			average += std::abs(test->label.at(idx) - actual.at(idx));
+		average /= actual.size();
+		results.emplace_back(std::move(average));
 	}
 	return std::move(results);
 }
