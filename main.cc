@@ -1,3 +1,4 @@
+#include "definitions.hh"
 #include "csv_handler.hh"
 #include "network.hh"
 #include <iomanip>
@@ -74,7 +75,8 @@ for (auto& momentum : MOMENTUM) {
 #elif
 	std::srand(std::time(NULL));
 #endif
-	network n(learning_rate, momentum, 2, width,depth, neuron_type); //the network
+	hyperparams parameters(learning_rate, momentum);
+	network n(parameters, neuron_type, 2, width,depth); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description parameterDATA(learning_rate, momentum, THRESHOLD,
 			neuron_type);
