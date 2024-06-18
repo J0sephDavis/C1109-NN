@@ -12,7 +12,8 @@ public:
 			size_t _width, size_t _depth);
 	//compute output of network given input
 	std::vector<std::vector<float>> compute(std::vector<float> input);
-	void train(std::vector<float> test, std::vector<float> label);
+	//train on dataset
+	void train();
 //==for tabulating later==
 	std::vector<float> benchmark();
 	std::string weight_header() const;
@@ -25,5 +26,8 @@ public:
 	std::vector<std::shared_ptr<training_instance>> trainingData;
 	//testing data
 	std::vector<std::shared_ptr<training_instance>> testingData;
+private:
+	//train on specific instance
+	void train_on_instance(size_t instance_id);
 };
 #endif
