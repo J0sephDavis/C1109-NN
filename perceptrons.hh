@@ -2,6 +2,7 @@
 #define PERCEPTRON_HEADER_HH
 #include <string>
 #include <vector>
+#include <cmath>
 
 enum perceptron_type {
 	UNDEFINED,
