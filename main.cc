@@ -42,6 +42,7 @@ int main(void) {
 	//preparations
 	const int width = 2;
 	const int depth = 3;
+	data_file training_set(4,3,"/mnt/tmpfs/iris.csv");
 #ifdef SEED_VAL
 	auto srand_seed = SEED_VAL;
 #endif
@@ -71,14 +72,14 @@ for (auto& momentum : MOMENTUM) {
 	std::srand(std::time(NULL));
 #endif
 	hyperparams parameters(learning_rate, momentum);
-	network n(parameters, neuron_type, 2, width,depth); //the network
+	network n(parameters, neuron_type, std::cref(training_set), width,depth); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description parameterDATA(learning_rate, momentum, THRESHOLD,
 			neuron_type);
 	//
 	std::stringstream fileName;
 	fileName << "/mnt/tmpfs/csv/"
-		<< neuronType + "/"
+		<< neuronType + "-"
 		<< "L" << std::fixed << std::setprecision(2) << learning_rate
 		<< "M" << std::fixed << std::setprecision(2) << momentum
 		<< ".csv";
@@ -107,9 +108,8 @@ for (auto& momentum : MOMENTUM) {
 		if (eraDATA.average < THRESHOLD and eraDATA.max < THRESHOLD)
 			break;
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
-			for (size_t idx = 0; idx < tests.size(); idx++) {
-				n.train(tests[idx], expectations[idx]);
-		}}
+				n.train();
+		}
 	}
 }
 	return 0;
