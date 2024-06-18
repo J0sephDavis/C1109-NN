@@ -1,7 +1,14 @@
 #include "csv_handler.hh"
-#include "headers.hh"
 #include "network.hh"
+#include <iomanip>
+#include <iostream>
+#include <cstdlib>
+#include <ctime>
 
+#define MAX_ERAS 10000
+#define EPOCHS 1
+#define THRESHOLD 0.2f
+#define SEED_VAL 9350
 const std::vector<std::vector<float>> tests {
 	{0,0},{0,1},
 	{1,0},{1,1}
