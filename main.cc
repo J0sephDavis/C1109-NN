@@ -1,19 +1,13 @@
 #include "definitions.hh"
 #include "csv_handler.hh"
 #include "network.hh"
+#include "dataset.hh"
 
 #include <iomanip>
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
 
-const std::vector<std::vector<float>> tests {
-	{0,0},{0,1},
-	{1,0},{1,1}
-};
-const std::vector<std::vector<float>> expectations {
-	{0},{1},{1},{0}
-};
 typedef struct era_description {
 	float sum = 0.0f;
 	float average = 0.0f;

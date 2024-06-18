@@ -19,13 +19,13 @@ data_file::data_file(size_t instance_len, size_t label_len, std::filesystem::pat
 			//TODO should it be std::stof(std::move(buff)) or std::stof(buff)?
 			row.emplace_back(std::stof(std::move(buff)));
 		}
-		if (file.eof()) break;
+		//!!EXIT POINT!!
+		if (file.eof()) break; 
 	//get the final value which is unlikely to have a comma before the new line.
 	//TODO check if buff ends with a separator and delete it before std::stof(buff)
 		std::getline(file,buff); 
 		row.emplace_back(std::stof(std::move(buff)));
 		//add training instance to vector
 		data.emplace_back(training_instance(instance_len, label_len, std::move(row)));
-
 	}
 }
