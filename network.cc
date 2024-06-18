@@ -1,18 +1,20 @@
 #include "network.hh"
 network::network(const hyperparams params, perceptron_type neuron_t,
-		size_t input_width, size_t _width, size_t _depth)
-	: params(std::move(params)) {
-		this->depth = _depth;
-		this->width = _width;
-		//generate
-		layers.emplace_back(new input_layer(input_width, BIAS_NEURONS));
-		for (size_t i = 1; i < depth - 1; i++) {
-			layers.emplace_back(
-				new layer(width, layers[i-1]->width, BIAS_NEURONS,neuron_t));
-		}
-		 //single output node
-		layers.emplace_back(new output_layer(1, layers[depth-2]->width, neuron_t));
+	const data_file& df,
+	size_t _width, size_t _depth)
+: params(std::move(params)) {
+	//TODO warn when width < instance_len
+	this->depth = _depth;
+	this->width = _width;
+	//generate
+	layers.emplace_back(new input_layer(df.instance_len, BIAS_NEURONS));
+	for (size_t i = 1; i < depth - 1; i++) {
+		layers.emplace_back(
+			new layer(width, layers[i-1]->width, BIAS_NEURONS,neuron_t));
 	}
+	 //single output node
+	layers.emplace_back(new output_layer(df.label_len, layers[depth-2]->width, neuron_t));
+}
 
 std::vector<std::vector<float>> network::compute(std::vector<float> input) {
 	std::vector<std::vector<float>> outputs;
