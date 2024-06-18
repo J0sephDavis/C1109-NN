@@ -25,30 +25,33 @@ std::vector<std::vector<float>> network::compute(std::vector<float> input) {
 	return std::move(outputs);
 }
 
-void network::train(std::vector<float> test, std::vector<float> label) {
-	//PREP
-	std::vector<std::vector<float>> output = compute(test);
-	std::vector<float> input_values = {};
-	//Backpropagate
-	for (int layer_index = layers.size()-1; layer_index >= 0;
-			layer_index--) {
-		//prepare layer input
-		if (layer_index == 0) 
-			input_values = test;
-		else {
-			input_values = output.at(layer_index-1);
-		}
-		//prepare upper layer
-		std::shared_ptr<layer> upper_layer = NULL;
-		if (layer_index+1 != (int)layers.size())
-			upper_layer = layers.at(layer_index+1);
-		layers.at(layer_index)->update_err_contrib(label, upper_layer);
+void network::train() {
+	for (size_t i = 0; i < trainingData.size(); i++) {
+		train_on_instance(i);
 	}
-	for (int layer_index = layers.size()-1; layer_index >= 0;
-			layer_index--) {
-		if (layer_index == 0) input_values = test;
-		else input_values = output.at(layer_index-1);
-		layers.at(layer_index)->train(input_values, params);
+}
+
+void network::train_on_instance(size_t instance_id) {
+//PREP
+	//compute the forward pass of the network
+	std::vector<std::vector<float>> output_data = compute(trainingData.at(instance_id)->data);
+	//add the input to the beginning of the output_data
+	output_data.insert(output_data.begin(), trainingData.at(instance_id)->data);
+	//Backpropagate
+	//1. err contribution
+	for (size_t layer_index = layers.size(); layer_index != 0; layer_index--) {
+		std::shared_ptr<layer> upper_layer = NULL;
+		if (layer_index+1 != layers.size())
+			upper_layer = layers.at(layer_index+1);
+		//update the error contribution
+		layers.at(layer_index)->update_err_contrib(
+				std::cref(trainingData.at(instance_id)->label), upper_layer);
+	}
+	//2. gradient descent
+	for (size_t layer_index = layers.size()-1; layer_index !=0; layer_index--) {
+		layers.at(layer_index)->train(
+				std::cref(output_data.at(layer_index)),
+				std::cref(params));
 	}
 }
 /*TODO for classification, return a vector with an output len equal to
