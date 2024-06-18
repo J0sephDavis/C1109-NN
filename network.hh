@@ -3,8 +3,7 @@
 #include "csv_handler.hh"
 #include "dataset.hh"
 #include "layers.hh"
-
-#define BIAS_NEURONS 1
+#include "definitions.hh"
 
 class network {
 public:
