@@ -1,4 +1,8 @@
-#include "headers.hh"
+#ifndef PERCEPTRON_HEADER_HH
+#define PERCEPTRON_HEADER_HH
+#include <string>
+#include <vector>
+
 enum perceptron_type {
 	UNDEFINED,
 	logistic,
@@ -84,3 +88,4 @@ public:
 	//only train the selected inputs weights
 	void train(const hyperparams& params, std::vector<float> input) override;
 };
+#endif

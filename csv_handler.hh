@@ -1,3 +1,5 @@
+#ifndef CSV_HANDLER_HEADER
+#define CSV_HANDLER_HEADER
 #include <fstream>
 #include <ostream>
 #include <sstream>
@@ -26,3 +28,4 @@ public:
 	void add_row(std::vector<csv_cell>); //adds a row to the csv
 	std::ofstream file;
 };
+#endif

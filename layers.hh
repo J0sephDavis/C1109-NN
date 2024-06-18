@@ -1,4 +1,7 @@
+#ifndef NETWORK_LAYER_HH
+#define NETWORK_LAYER_HH
 #include "perceptrons.hh"
+#include <memory> //unique_ptr
 //a layer of perceptrons
 class layer {
 public:
@@ -33,3 +36,4 @@ public:
 	input_layer(size_t input_width, size_t bias);
 	virtual std::vector<float> output(std::vector<float> input) override;
 };
+#endif

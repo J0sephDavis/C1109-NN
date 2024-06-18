@@ -1,3 +1,5 @@
+#ifndef NN_HEADER
+#define NN_HEADER
 #include "csv_handler.hh"
 #include "layers.hh"
 
@@ -29,4 +31,4 @@ typedef struct sheet_description {
 		cells.emplace_back((int)type);
 	}
 } sheet_description;
-
+#endif
