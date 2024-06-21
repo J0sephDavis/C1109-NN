@@ -7,20 +7,21 @@
 #include <iostream>
 #include <cstdlib>
 #include <ctime>
+#include <iterator>
 
 typedef struct era_description {
 	float sum = 0.0f;
 	float average = 0.0f;
 	float max = 0.0f;
 	std::vector<csv_cell> cells;
-	const std::string fields = "e1,e2,e3,e4,avg";
+	const std::string fields = "e1,e2,e3,avg";
 	era_description(std::vector<float> current)
 	{
 		for (const auto& val : current) {
 			if (max < val) max = val;
 			sum += val;
 		}
-		average = sum / 4;
+		average = sum / current.size();
 		for (const float& e : current) cells.emplace_back(csv_cell(e)); 
 		cells.emplace_back(average);
 	}
@@ -40,9 +41,9 @@ typedef struct sheet_description {
 
 int main(void) {
 	//preparations
-	const int width = 2;
-	const int depth = 3;
 	data_file training_set(4,3,"/mnt/tmpfs/iris.csv");
+	const int width = training_set.instance_len+1;
+	const int depth = training_set.instance_len*2; //arbitrary depth chosen
 #ifdef SEED_VAL
 	auto srand_seed = SEED_VAL;
 #endif
@@ -68,7 +69,7 @@ for (auto& momentum : MOMENTUM) {
 	}
 #ifdef SEED_VAL
 	std::srand(srand_seed);
-#elif
+#else
 	std::srand(std::time(NULL));
 #endif
 	hyperparams parameters(learning_rate, momentum);
@@ -87,7 +88,7 @@ for (auto& momentum : MOMENTUM) {
 	std::vector<std::string> headers = {
 		sheet_description(0,0,0,(perceptron_type)0).fields,
 		era_description({0.0,0.0,0.0,0.0}).fields,
-		n.weight_header(),
+//		n.weight_header(),
 	};
 	csv_file DATA(std::move(fileName.str()), std::move(headers));
 
@@ -98,10 +99,10 @@ for (auto& momentum : MOMENTUM) {
 		era_description eraDATA(results.back());
 		//3. Store
 		std::vector<csv_cell> cells;
-		cells.insert(cells.end(), parameterDATA.cells.begin(), parameterDATA.cells.end());
-		cells.insert(cells.end(), eraDATA.cells.begin(), eraDATA.cells.end());
-		const auto weights = n.weights();
-		cells.insert(cells.end(), weights.begin(), weights.end());
+		std::copy(parameterDATA.cells.begin(), parameterDATA.cells.end(), std::back_insert_iterator(cells));
+		std::copy(eraDATA.cells.begin(), eraDATA.cells.end(), std::back_insert_iterator(cells));
+//		const auto weights = n.weights();
+//		std::copy(weights.begin(), weights.end(), std::back_insert_iterator(cells));
 		DATA.add_row(std::move(cells));
 		//4. Train
 		//Good learners end early
