@@ -10,18 +10,18 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 	size_t neuron_index = 0;
 	//first, initialize all bias neurons.
 	for (; neuron_index < bias_neurons; neuron_index++) {
-		neurons.emplace_back(new bias_perceptron());
+		neurons.emplace_back(std::make_shared<bias_perceptron>());
 	}
 	//Then, initialize neurons of the layer type
 	if (type == logistic) for (; neuron_index < width; neuron_index++) {
-		neurons.emplace_back(new perceptron(input_width));
+		neurons.emplace_back(std::make_shared<perceptron>(input_width));
 	}
 	else if (type == passthrough) for (; neuron_index < width; neuron_index++) {
-		neurons.emplace_back(new pass_perceptron(input_width));
+		neurons.emplace_back(std::make_shared<pass_perceptron>(input_width));
 	}
 	else if (type == hyperbolic_tangent) for (; neuron_index < width;
 			neuron_index++) {
-		neurons.emplace_back(new perceptron_htan(input_width));
+		neurons.emplace_back(std::make_shared<perceptron_htan>(input_width));
 	}
 	else if (type == selection_pass) for(; neuron_index < width; neuron_index++) {
 		//selector must have a length equal to the input that will be passed to it
@@ -30,7 +30,7 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 			if (i == neuron_index) selector.push_back(true);
 			else selector.push_back(false);
 		}
-		neurons.emplace_back(new select_perceptron(input_width, std::move(selector)));
+		neurons.emplace_back(std::make_shared<select_perceptron>(input_width, std::move(selector)));
 	}
 	else throw std::runtime_error("INVALID ACTIVATION TYPE");
 };
