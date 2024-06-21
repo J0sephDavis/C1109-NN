@@ -16,23 +16,32 @@ network::network(const hyperparams params, perceptron_type neuron_t,
 	 //single output node
 	layers.emplace_back(std::make_shared<output_layer>(df.label_len, layers[depth-2]->width, neuron_t));
 	//get some testing data
+	std::random_device rand_device; //std::random_device is a uniformly-distributed integer random number generator that produces non-deterministic random numbers. 
+	std::mt19937 random_engine(rand_device());
+	std::uniform_int_distribution<size_t> dist(0,df.data.size()-1);
+//	std::uniform_real_distribution<> distribution(-1.0f,1.0f); //Produces random floating-point values x, uniformly distributed on the interval [a,b), that is, distributed according to the probability density function: p(x|a,b)=1/(b-a)
+
+	//index of testing data
+	const auto TEST_SIZE = df.data.size() * TESTING_RATIO;
+	std::vector<size_t> testing_index(TEST_SIZE);
+	//generate distribution of testing data
+	for (size_t i = 0; i < TEST_SIZE ; i++)
+		testing_index.push_back(dist(random_engine));
+	//copy all matching indexes to training data, otherwise copy to testing data
 	std::cout << "testing data{\n";
-	for (size_t i = 0; i < df.data.size() * 0.2; i++) {
-		auto random_index = std::rand() % df.data.size();
-		testingData.push_back(df.data.at(random_index));
-		for (const auto& v : df.data.at(random_index)->data) {
+	for (size_t i = 0; i < df.data.size(); i++) {
+		if (std::ranges::find(testing_index.begin(), testing_index.end(),i) != testing_index.end()) {
+			testingData.push_back(df.data.at(i));
+			//printout
+			for (const auto& v : df.data.at(i)->data)
 				std::cout << v << "\t";
-		}
-		for (const auto& v : df.data.at(random_index)->label) {
+			for (const auto& v : df.data.at(i)->label)
 				std::cout << v << "\t";
+			std::cout << "\n";
 		}
-		std::cout << "\n";
+		else trainingData.push_back(df.data.at(i));
 	}
 	std::cout << "\n}\n";
-	//train on whole dataset for now
-	for (const auto& sp_inst : df.data) {
-		trainingData.push_back(sp_inst);
-	}
 }
 
 std::vector<std::vector<float>> network::compute(std::vector<float> input) {

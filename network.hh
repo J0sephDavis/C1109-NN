@@ -1,5 +1,6 @@
 #ifndef NN_HEADER
 #define NN_HEADER
+#include <random>
 #include "csv_handler.hh"
 #include "dataset.hh"
 #include "layers.hh"
