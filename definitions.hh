@@ -6,5 +6,6 @@
 #define THRESHOLD 0.2f
 #define SEED_VAL 9350
 #define BIAS_NEURONS 1
+#define TESTING_RATIO 0.3f
 
 #endif
