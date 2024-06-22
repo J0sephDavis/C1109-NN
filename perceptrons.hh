@@ -7,7 +7,6 @@
 #include <random>
 namespace neurons {
 enum type {
-	UNDEFINED,
 	logistic,
 	bias,
 	passthrough,
@@ -15,24 +14,27 @@ enum type {
 	selection_pass
 };
 enum weight_initializer {
-	w_default, // let the construcor decide
-//random: std::rand()
-	random, 
-//Glorot/Xavier: NORMAL distribution, Variance=1/fan_avg, mean=0
-//or UNIFORM distribution from [-r,r], r=sqrt(3/fan_avg)
-//Good for tanh,logistic,softmax
+	//random_default: std::rand()
+	random_default, 
+	//Glorot/Xavier: NORMAL distribution, Variance=1/fan_avg, mean=0
+	//or UNIFORM distribution from [-r,r], r=sqrt(3/fan_avg)
+	//Good for tanh,logistic,softmax
 	glorot,
-//LeCun: Glorot/Xavier but fan_avg replaced by fan_in. Variance=1/fan_in
-//GOod for SELU
+	//LeCun: Glorot/Xavier but fan_avg replaced by fan_in. Variance=1/fan_in
+	//GOod for SELU
 	le_cun, 
-//He: Variance=2/_fan_in
-//Good for ReLU & variants
+	//He: Variance=2/_fan_in
+	//Good for ReLU & variants
 	he,
 };
 enum distribution_type {
 	uniform,
 	normal
 };
+//creates a weight distribution using the initializer method & distribution type
+std::vector<float> weight_distribution(weight_initializer winit_t,
+		distribution_type dist_t, size_t fan_in, size_t fan_out);
+
 //The hyperparmeters that define the training behavior
 typedef struct hyperparams {
 	hyperparams(const float learning_rate, const float momentum) {
@@ -56,9 +58,11 @@ static inline float calc_dw(const hyperparams& params, float err_contrib,
 //
 class perceptron {
 	public:
-		perceptron(int,bool rand_weights = true);
-		type _type = UNDEFINED;
-		//returns the activation functions name. (for logging)
+		//TODO include output_lenght for fan_avg calc
+		perceptron(size_t input_length,
+				weight_initializer weight_t,
+				distribution_type dist_t);
+		type _type = logistic;
 	//forward pass
 		//compute sum_i (w_ij * o_ij) - called during a forward pass
 		float calculate(const std::vector<float> input);
