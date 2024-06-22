@@ -42,8 +42,8 @@ typedef struct sheet_description {
 int main(void) {
 	//preparations
 	data_file training_set(4,3,"/mnt/tmpfs/iris.csv");
-	const int width = training_set.instance_len+1;
-	const int depth = training_set.instance_len*2; //arbitrary depth chosen
+	const int width = training_set.instance_len*5;
+	const int depth = training_set.instance_len*5; //arbitrary depth chosen
 #ifdef SEED_VAL
 	auto srand_seed = SEED_VAL;
 #endif

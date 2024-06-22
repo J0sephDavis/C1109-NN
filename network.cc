@@ -94,7 +94,8 @@ void network::train_on_instance(size_t instance_id) {
 std::vector<float> network::benchmark() {
 //RMSE(X,h) = sqrt( (1/m) * SUM_i=1:m(h(x_i)-y_i)^2
 //sqrt m^-1 * S_m(h(x)- y)62
-//this implementation is MAE for each element in the vector, followed by an average of all of the errors
+//this implementation is Mean Absolute Error for each element in the vector,
+//followed by an average of all of the errors
 	const size_t output_len = testingData.at(0)->label.size();
 	std::vector<std::vector<float>> classifier_results(output_len);
 	for (const auto& test : testingData) {
