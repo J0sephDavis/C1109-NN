@@ -1,11 +1,12 @@
 #ifndef PERCEPTRON_HEADER_HH
 #define PERCEPTRON_HEADER_HH
+#include <memory>
 #include <string>
 #include <vector>
 #include <cmath>
 #include <random>
-
-enum perceptron_type {
+namespace neurons {
+enum type {
 	UNDEFINED,
 	logistic,
 	bias,
@@ -13,6 +14,26 @@ enum perceptron_type {
 	hyperbolic_tangent,
 	selection_pass
 };
+enum weight_initializer {
+	w_default, // let the construcor decide
+//random: std::rand()
+	random, 
+//Glorot/Xavier: NORMAL distribution, Variance=1/fan_avg, mean=0
+//or UNIFORM distribution from [-r,r], r=sqrt(3/fan_avg)
+//Good for tanh,logistic,softmax
+	glorot,
+//LeCun: Glorot/Xavier but fan_avg replaced by fan_in. Variance=1/fan_in
+//GOod for SELU
+	le_cun, 
+//He: Variance=2/_fan_in
+//Good for ReLU & variants
+	he,
+};
+enum distribution_type {
+	uniform,
+	normal
+};
+//The hyperparmeters that define the training behavior
 typedef struct hyperparams {
 	hyperparams(const float learning_rate, const float momentum) {
 		this->learning_rate = learning_rate;
@@ -36,9 +57,8 @@ static inline float calc_dw(const hyperparams& params, float err_contrib,
 class perceptron {
 	public:
 		perceptron(int,bool rand_weights = true);
-		perceptron_type type = UNDEFINED;
+		type _type = UNDEFINED;
 		//returns the activation functions name. (for logging)
-		const std::string type_str() const;
 	//forward pass
 		//compute sum_i (w_ij * o_ij) - called during a forward pass
 		float calculate(const std::vector<float> input);
@@ -72,7 +92,7 @@ public:
 	float activation(float net_input) override;
 	void train(const hyperparams& params, std::vector<float> input) override;
 private:
-	float delta_output = 0.0f; // change in output during training(n-1)
+	float delta_output = 0.0f;
 };
 
 class pass_perceptron : public perceptron {
@@ -90,4 +110,5 @@ public:
 	//only train the selected inputs weights
 	void train(const hyperparams& params, std::vector<float> input) override;
 };
+}
 #endif

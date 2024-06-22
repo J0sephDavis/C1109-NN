@@ -1,4 +1,5 @@
 #include "perceptrons.hh"
+namespace neurons {
 //INITIALIZE
 perceptron::perceptron(int count_inputs, bool rand_weights) {
 	if (rand_weights) for (int i = 0; i < count_inputs; i++) {
@@ -6,9 +7,8 @@ perceptron::perceptron(int count_inputs, bool rand_weights) {
 		std::mt19937 random_engine(rand_device());
 		//le cun initialization
 		float r = 1.0f/count_inputs;
-		std::uniform_real_distribution<> dist(-r,r);
+		std::normal_distribution<> dist(0,r);
 		weights.push_back(
-			//((std::rand()%10)-5) * 0.1
 			dist(rand_device)
 		);
 		delta_weights.push_back(0);
@@ -17,26 +17,26 @@ perceptron::perceptron(int count_inputs, bool rand_weights) {
 		weights.push_back(1);
 		delta_weights.push_back(0);
 	}
-	type = logistic;
+	_type = logistic;
 }
 perceptron_htan::perceptron_htan(int count_inputs, bool rand_weights)
 	: perceptron(std::move(count_inputs), std::move(rand_weights)) {
-		type = hyperbolic_tangent;
+		_type = hyperbolic_tangent;
 	}
 bias_perceptron::bias_perceptron() : perceptron(0) {
 		output = 1;
 		derivative = 1;
-		type = bias;
+		_type = bias;
 }
 pass_perceptron::pass_perceptron(size_t net_input_width)
 	: perceptron(net_input_width, false) {
 	derivative = 1; //set again during activation()
-	type = passthrough;
+	_type = passthrough;
 }
 select_perceptron::select_perceptron(size_t net_input_width, std::vector<bool> selection_vector):
 	pass_perceptron(net_input_width),
 	selection_vector(std::move(selection_vector)) {
-		type = selection_pass;
+		_type = selection_pass;
 		//This doesn't need to be done. Added for when viewing the weight dump
 		for (size_t i = 0; i < selection_vector.size(); i++) {
 			weights.at(i) = selection_vector.at(i);
@@ -45,7 +45,7 @@ select_perceptron::select_perceptron(size_t net_input_width, std::vector<bool> s
 //CALCULATE
 float perceptron::calculate(const std::vector<float> input) {
 	float weighted_sum = 0;
-	if (type==bias) return activation(weighted_sum);
+	if (_type==bias) return activation(weighted_sum);
 	for (size_t i = 0; i < input.size(); i++) {
 		weighted_sum += input[i] * weights[i];
 	}
@@ -101,21 +101,4 @@ void bias_perceptron::train(const hyperparams& params, std::vector<float> input)
 	delta_output = calc_dw(params, error_contribution, 1.0f, delta_output);
 	output += delta_output;
 }
-//TYPE
-const std::string perceptron::type_str() const {
-	switch (type) {
-		case (logistic):
-			return "logistic";
-		case(bias):
-			return "bias";
-		case(passthrough):
-			return "passthrough";
-		case(hyperbolic_tangent):
-			return "htan";
-		case(selection_pass):
-			return "selection";
-		case(UNDEFINED):
-		default:
-			return "UNK";
-	}
 }
