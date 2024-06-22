@@ -1,56 +1,6 @@
 #include "perceptrons.hh"
 namespace neurons {
 //INITIALIZE
-std::vector<float> weight_distribution(weight_initializer winit_t,
-		distribution_type dist_t, size_t fan_in, size_t fan_out = 0) {
-	std::vector<float> weights;
-	std::random_device rand_device;
-	std::mt19937 random_engine(rand_device());
-
-	float variance, mean, r;
-	size_t fan_avg = (fan_in+fan_out)/2;
-
-	switch(winit_t) {
-		case(random_default):
-			//TODO understand how random_engine works. should be PRNG?
-			for (size_t i = 0; i < fan_in; i++)
-				weights.push_back(random_engine());
-			break;
-		case(glorot):
-			variance = 1.0f/(fan_avg);
-			mean = 0.0f;
-			r = sqrt(3.0f/fan_avg);
-			break;
-		case(le_cun):
-			variance = 1.0f/(fan_in);
-			mean = 0.0f;
-			r = sqrt(3.0f/fan_in);
-			break;
-		case(he):
-			//TODO what does r=?
-			variance = 2.0f/(fan_in);
-			mean = 0.0f;
-			r = sqrt(3.0f/fan_in);
-			break;
-	}
-	switch(dist_t) {
-		case(uniform):
-			{
-			std::uniform_real_distribution<> dist(-r,r);
-			for (size_t i = 0; i < fan_in; i++)
-				weights.push_back(dist(rand_device));
-			}
-			break;
-		case(normal):
-			{
-			std::normal_distribution<> dist(0,r);
-			for (size_t i = 0; i < fan_in; i++)
-				weights.push_back(dist(rand_device));
-			}
-			break;
-	}
-	return std::move(weights);
-}
 perceptron::perceptron(size_t input_len, weight_initializer winit_t,
 		distribution_type dist_t) {
 	//create a distribution of weights
@@ -143,5 +93,55 @@ void bias_perceptron::train(const hyperparams& params, std::vector<float> input)
 	//change in output is the 
 	delta_output = calc_dw(params, error_contribution, 1.0f, delta_output);
 	output += delta_output;
+}
+std::vector<float> weight_distribution(weight_initializer winit_t,
+		distribution_type dist_t, size_t fan_in, size_t fan_out = 0) {
+	std::vector<float> weights;
+	std::random_device rand_device;
+	std::mt19937 random_engine(rand_device());
+
+	float variance, mean, r;
+	size_t fan_avg = (fan_in+fan_out)/2;
+
+	switch(winit_t) {
+		case(random_default):
+			//TODO understand how random_engine works. should be PRNG?
+			for (size_t i = 0; i < fan_in; i++)
+				weights.push_back(random_engine());
+			break;
+		case(glorot):
+			variance = 1.0f/(fan_avg);
+			mean = 0.0f;
+			r = sqrt(3.0f/fan_avg);
+			break;
+		case(le_cun):
+			variance = 1.0f/(fan_in);
+			mean = 0.0f;
+			r = sqrt(3.0f/fan_in);
+			break;
+		case(he):
+			//TODO what does r=?
+			variance = 2.0f/(fan_in);
+			mean = 0.0f;
+			r = sqrt(3.0f/fan_in);
+			break;
+	}
+	switch(dist_t) {
+		case(uniform):
+			{
+			std::uniform_real_distribution<> dist(-r,r);
+			for (size_t i = 0; i < fan_in; i++)
+				weights.push_back(dist(rand_device));
+			}
+			break;
+		case(normal):
+			{
+			std::normal_distribution<> dist(0,r);
+			for (size_t i = 0; i < fan_in; i++)
+				weights.push_back(dist(rand_device));
+			}
+			break;
+	}
+	return std::move(weights);
 }
 }
