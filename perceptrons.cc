@@ -1,23 +1,66 @@
 #include "perceptrons.hh"
 namespace neurons {
 //INITIALIZE
-perceptron::perceptron(int count_inputs, bool rand_weights) {
-	if (rand_weights) for (int i = 0; i < count_inputs; i++) {
-		std::random_device rand_device;
-		std::mt19937 random_engine(rand_device());
-		//le cun initialization
-		float r = 1.0f/count_inputs;
-		std::normal_distribution<> dist(0,r);
-		weights.push_back(
-			dist(rand_device)
-		);
-		delta_weights.push_back(0);
+std::vector<float> weight_distribution(weight_initializer winit_t,
+		distribution_type dist_t, size_t fan_in, size_t fan_out = 0) {
+	std::vector<float> weights;
+	std::random_device rand_device;
+	std::mt19937 random_engine(rand_device());
+
+	float variance, mean, r;
+	size_t fan_avg = (fan_in+fan_out)/2;
+
+	switch(winit_t) {
+		case(random_default):
+			//TODO understand how random_engine works. should be PRNG?
+			for (size_t i = 0; i < fan_in; i++)
+				weights.push_back(random_engine());
+			break;
+		case(glorot):
+			variance = 1.0f/(fan_avg);
+			mean = 0.0f;
+			r = sqrt(3.0f/fan_avg);
+			break;
+		case(le_cun):
+			variance = 1.0f/(fan_in);
+			mean = 0.0f;
+			r = sqrt(3.0f/fan_in);
+			break;
+		case(he):
+			//TODO what does r=?
+			variance = 2.0f/(fan_in);
+			mean = 0.0f;
+			r = sqrt(3.0f/fan_in);
+			break;
 	}
-	else for (int i = 0; i < count_inputs; i++) {
-		weights.push_back(1);
-		delta_weights.push_back(0);
+	switch(dist_t) {
+		case(uniform):
+			{
+			std::uniform_real_distribution<> dist(-r,r);
+			for (size_t i = 0; i < fan_in; i++)
+				weights.push_back(dist(rand_device));
+			}
+			break;
+		case(normal):
+			{
+			std::normal_distribution<> dist(0,r);
+			for (size_t i = 0; i < fan_in; i++)
+				weights.push_back(dist(rand_device));
+			}
+			break;
 	}
-	_type = logistic;
+	return std::move(weights);
+}
+perceptron::perceptron(size_t input_len, weight_initializer winit_t,
+		distribution_type dist_t) {
+	//create a distribution of weights
+	this->weights = std::move(
+		weight_distribution(
+			std::move(winit_t),
+			std::move(dist_t), input_len)
+	);
+	for (size_t i = 0; i < input_len; i++)
+		delta_weights.push_back(0);
 }
 perceptron_htan::perceptron_htan(int count_inputs, bool rand_weights)
 	: perceptron(std::move(count_inputs), std::move(rand_weights)) {
