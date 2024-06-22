@@ -19,7 +19,6 @@ network::network(const hyperparams params, perceptron_type neuron_t,
 	std::random_device rand_device; //std::random_device is a uniformly-distributed integer random number generator that produces non-deterministic random numbers. 
 	std::mt19937 random_engine(rand_device());
 	std::uniform_int_distribution<size_t> dist(0,df.data.size()-1);
-//	std::uniform_real_distribution<> distribution(-1.0f,1.0f); //Produces random floating-point values x, uniformly distributed on the interval [a,b), that is, distributed according to the probability density function: p(x|a,b)=1/(b-a)
 
 	//index of testing data
 	const auto TEST_SIZE = df.data.size() * TESTING_RATIO;
@@ -54,8 +53,13 @@ std::vector<std::vector<float>> network::compute(std::vector<float> input) {
 }
 
 void network::train() {
-	for (size_t i = 0; i < trainingData.size(); i++) {
-		train_on_instance(i);
+	std::random_device rand_device; 
+	std::mt19937 random_engine(rand_device());
+	std::uniform_int_distribution<size_t> dist(0,trainingData.size()-1);
+const float training_ratio = 0.6f;	
+	for (size_t i = 0; i < trainingData.size()*training_ratio; i++) {
+//		train_on_instance(i);
+		train_on_instance(dist(rand_device));
 	}
 }
 
@@ -88,6 +92,9 @@ void network::train_on_instance(size_t instance_id) {
  * the length of the test label. Each index will refer to each classification
  * so that the model can be properly graded*/
 std::vector<float> network::benchmark() {
+//RMSE(X,h) = sqrt( (1/m) * SUM_i=1:m(h(x_i)-y_i)^2
+//sqrt m^-1 * S_m(h(x)- y)62
+//this implementation is MAE for each element in the vector, followed by an average of all of the errors
 	const size_t output_len = testingData.at(0)->label.size();
 	std::vector<std::vector<float>> classifier_results(output_len);
 	for (const auto& test : testingData) {
@@ -96,7 +103,7 @@ std::vector<float> network::benchmark() {
 		float average = 0.0f;
 		for (size_t idx = 0 ; idx < actual.size(); idx++) {
 			classifier_results.at(idx).push_back(
-					std::abs(test->label.at(idx) - actual.at(idx)));
+					std::abs(actual.at(idx)- test->label.at(idx)));
 		}
 	}
 	std::vector<float> results;
