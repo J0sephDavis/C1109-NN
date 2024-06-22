@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <cmath>
+#include <random>
 
 enum perceptron_type {
 	UNDEFINED,

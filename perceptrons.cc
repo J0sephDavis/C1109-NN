@@ -2,7 +2,15 @@
 //INITIALIZE
 perceptron::perceptron(int count_inputs, bool rand_weights) {
 	if (rand_weights) for (int i = 0; i < count_inputs; i++) {
-		weights.push_back(((std::rand()%10)-5) * 0.1);
+		std::random_device rand_device;
+		std::mt19937 random_engine(rand_device());
+		//le cun initialization
+		float r = 1.0f/count_inputs;
+		std::uniform_real_distribution<> dist(-r,r);
+		weights.push_back(
+			//((std::rand()%10)-5) * 0.1
+			dist(rand_device)
+		);
 		delta_weights.push_back(0);
 	}
 	else for (int i = 0; i < count_inputs; i++) {
@@ -29,6 +37,10 @@ select_perceptron::select_perceptron(size_t net_input_width, std::vector<bool> s
 	pass_perceptron(net_input_width),
 	selection_vector(std::move(selection_vector)) {
 		type = selection_pass;
+		//This doesn't need to be done. Added for when viewing the weight dump
+		for (size_t i = 0; i < selection_vector.size(); i++) {
+			weights.at(i) = selection_vector.at(i);
+		}
 	}
 //CALCULATE
 float perceptron::calculate(const std::vector<float> input) {
