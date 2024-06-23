@@ -1,7 +1,8 @@
 #include "layers.hh"
+#include "perceptrons.hh"
 //INITIALIZE
 layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
-		perceptron_type type) {
+		neurons::type type, neurons::weightParams weight_p) {
 	//width is the number of neurons of the passed type to create. bias neurons are tacked onto the width during initialization, not when calling the constructor
 	//input width is the width of the previous layer
 	this->width = _width+_bias_neurons;
@@ -10,36 +11,21 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 	size_t neuron_index = 0;
 	//first, initialize all bias neurons.
 	for (; neuron_index < bias_neurons; neuron_index++) {
-		neurons.emplace_back(std::make_shared<bias_perceptron>());
+		neurons.emplace_back(neurons::neuron_factory(neurons::bias,
+			neurons::weightParams(neurons::skip_weights,neurons::normal),0,0));
 	}
 	//Then, initialize neurons of the layer type
-	if (type == logistic) for (; neuron_index < width; neuron_index++) {
-		neurons.emplace_back(std::make_shared<perceptron>(input_width));
+	for (; neuron_index < width; neuron_index++) {
+		neurons.emplace_back(neurons::neuron_factory(type,weight_p,0,this->input_width));
 	}
-	else if (type == passthrough) for (; neuron_index < width; neuron_index++) {
-		neurons.emplace_back(std::make_shared<pass_perceptron>(input_width));
-	}
-	else if (type == hyperbolic_tangent) for (; neuron_index < width;
-			neuron_index++) {
-		neurons.emplace_back(std::make_shared<perceptron_htan>(input_width));
-	}
-	else if (type == selection_pass) for(; neuron_index < width; neuron_index++) {
-		//selector must have a length equal to the input that will be passed to it
-		std::vector<bool> selector(input_width);
-		for (size_t i = 0; i < input_width; i++) {
-			if (i == neuron_index) selector.push_back(true);
-			else selector.push_back(false);
-		}
-		neurons.emplace_back(std::make_shared<select_perceptron>(input_width, std::move(selector)));
-	}
-	else throw std::runtime_error("INVALID ACTIVATION TYPE");
 };
-output_layer::output_layer(int width, int input_width, perceptron_type type)
-	: layer(width,input_width,0,type){
+output_layer::output_layer(int width, int input_width, neurons::type type, neurons::weightParams weight_p)
+	: layer(width,input_width,0,type,weight_p){
 	//NO BIAS NEURONS
 }
 input_layer::input_layer(size_t input_width, size_t bias_neurons)
-	: layer(input_width, input_width, bias_neurons, selection_pass) {
+	: layer(input_width, input_width, bias_neurons, neurons::selection_pass,
+			neurons::weightParams(neurons::skip_weights, neurons::normal)) {
 	//
 }
 //OUTPUT
@@ -61,8 +47,11 @@ std::vector<float> input_layer::output(std::vector<float> input) {
 }
 //ERROR_CONTRIBUTION
 float layer::get_associated_err(size_t neuron_j) {
+	std::cout << "ASSOCIATED ERR";
+	std::cout << "n.sze()" << neurons.size() << "\n";
 	float associated_error = 0;
 	//For all neurons, this upper layer, that are not bias neurons
+	
 	for (size_t k = bias_neurons; k < neurons.size(); k++) {
 		const auto& u_k = neurons.at(k);
 		associated_error +=
@@ -100,12 +89,12 @@ void output_layer::update_err_contrib(std::vector<float> label,
 }
 //TRAIN
 /* Calls the perceptrons training function of each neuron. */
-void layer::train(std::vector<float> input, const hyperparams& params) {
+void layer::train(std::vector<float> input, const neurons::hyperparams& params) {
 	for (auto& neuron : neurons) {
 		neuron->train(params, (input));
 	}
 }
-void output_layer::train(std::vector<float> input, const hyperparams& params) {
+void output_layer::train(std::vector<float> input, const neurons::hyperparams& params) {
 	//get error contribution of output nodes
 	for (size_t j = 0; j < neurons.size(); j++) {
 		const auto& neuron = neurons.at(j);

@@ -6,15 +6,15 @@
 class layer {
 public:
 	layer(size_t _width, size_t _input_width, size_t _bias_neurons,
-		perceptron_type type = logistic);
+		neurons::type type, neurons::weightParams weight_p);
 	virtual std::vector<float> output(std::vector<float> input);
 	float get_associated_err(size_t neuron_j);
 	virtual void update_err_contrib(std::vector<float> label,
 			std::shared_ptr<layer> upper_layer);
-	virtual void train(std::vector<float>input, const hyperparams& params);
+	virtual void train(std::vector<float>input, const neurons::hyperparams& params);
 public:
 	//the first neurons MUST be the bias neurons
-	std::vector<std::shared_ptr<perceptron>> neurons;
+	std::vector<std::shared_ptr<neurons::perceptron>> neurons;
 	//total neurons in layer (the # of neurons of specified type + bias neurons)
 	size_t width; 
 	//The width of the input vector
@@ -26,10 +26,10 @@ class output_layer : public layer {
 public:
 	/* No bias neuron on this layer */
 	output_layer(int width, int input_width,
-			perceptron_type type = logistic);
+			neurons::type type, neurons::weightParams weight_p);
 	void update_err_contrib(std::vector<float> label,
 				std::shared_ptr<layer> upper_layer) override;
-	void train(std::vector<float> input, const hyperparams& params) override;
+	void train(std::vector<float> input, const neurons::hyperparams& params) override;
 };
 class input_layer : public layer {
 public:
