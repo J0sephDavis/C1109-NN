@@ -1,36 +1,89 @@
 #include "perceptrons.hh"
 namespace neurons {
+std::shared_ptr<perceptron>neuron_factory(const type neuron_t,
+		const weight_initializer weight_t, const distribution_type dist_t,
+		const size_t arugment0, const size_t fan_in, const size_t fan_out) {
+	return neuron_factory(neuron_t,
+			std::move(weightParams(std::move(weight_t),std::move(dist_t))),
+			arugment0, fan_in, fan_out);
+}
+std::shared_ptr<perceptron>neuron_factory(const type neuron_t, const weightParams weight_p,
+		const size_t argument0,	const size_t fan_in, const size_t fan_out) {
+	std::shared_ptr<perceptron> neuron;
+	switch (neuron_t) {
+		default:
+			std::cerr << "NEURON_FACTORY USED DEFAULT.\n";
+			[[fallthrough]];
+		case(logistic):
+			neuron = std::make_shared<perceptron>
+				(perceptron(std::move(weight_p), fan_in, fan_out));
+			break;
+		case(bias):
+			neuron = std::make_shared<perceptron>(perceptron_bias());
+			break;
+		case(passthrough):
+			neuron = std::make_shared<perceptron>
+				(perceptron_pass(fan_in));
+			break;
+		case(hyperbolic_tangent):
+			neuron = std::make_shared<perceptron>
+				(perceptron_htan(std::move(weight_p), fan_in, fan_out));
+			break;
+		case(selection_pass):
+			std::vector<bool> selector(fan_in);
+			for (size_t i = 0; i < fan_in; i++) {
+				if (i == argument0) selector.push_back(true);
+				else selector.push_back(false);
+			}
+			neuron = std::make_shared<perceptron>
+				(perceptron_select(fan_in, std::move(selector)));
+			break;
+	}
+	return std::move(neuron);
+}
 //INITIALIZE
-perceptron::perceptron(size_t input_len, weight_initializer winit_t,
-		distribution_type dist_t) {
-	//create a distribution of weights
-	this->weights = std::move(
-		weight_distribution(
-			std::move(winit_t),
-			std::move(dist_t), input_len)
-	);
+perceptron::perceptron(const weightParams& w_params, size_t input_len,
+		size_t output_len = 0) {
+	//create the delta weight vector (for momentum)
 	for (size_t i = 0; i < input_len; i++)
 		delta_weights.push_back(0);
+	
+	//early return for nodes who handle weights in their own constructors
+	if (w_params.winit_t == skip_weights) {
+		for (size_t i = 0; i < input_len; i++) {
+			weights.push_back(1);
+		}
+	}
+	//create a distribution of weights
+	else {
+		this->weights = std::move(
+			//TODO breakpoint to test the pass by ref to ptr
+			weight_distribution(w_params,
+				input_len,output_len)
+		);
+	}
 }
-perceptron_htan::perceptron_htan(int count_inputs, bool rand_weights)
-	: perceptron(std::move(count_inputs), std::move(rand_weights)) {
+
+perceptron_htan::perceptron_htan(const weightParams& w_params,
+		size_t input_len, size_t output_len = 0)
+	: perceptron(std::move(w_params), std::move(input_len), std::move(output_len)) {
 		_type = hyperbolic_tangent;
 	}
-bias_perceptron::bias_perceptron() : perceptron(0) {
+perceptron_bias::perceptron_bias() : perceptron(std::move(weightParams(skip_weights,normal)), 0) {
 		output = 1;
 		derivative = 1;
 		_type = bias;
 }
-pass_perceptron::pass_perceptron(size_t net_input_width)
-	: perceptron(net_input_width, false) {
+perceptron_pass::perceptron_pass(size_t net_input_width)
+	: perceptron(std::move(weightParams(skip_weights, normal)),net_input_width) {
 	derivative = 1; //set again during activation()
 	_type = passthrough;
 }
-select_perceptron::select_perceptron(size_t net_input_width, std::vector<bool> selection_vector):
-	pass_perceptron(net_input_width),
+perceptron_select::perceptron_select(size_t net_input_width, std::vector<bool> selection_vector):
+	perceptron_pass(net_input_width),
 	selection_vector(std::move(selection_vector)) {
 		_type = selection_pass;
-		//This doesn't need to be done. Added for when viewing the weight dump
+		//This doesn't need to be done. Added for when viewing the weight dump later
 		for (size_t i = 0; i < selection_vector.size(); i++) {
 			weights.at(i) = selection_vector.at(i);
 		}
@@ -59,12 +112,12 @@ float perceptron_htan::activation(float input) {
 	derivative = 1/(derivative * derivative);
 	return output;
 }
-float bias_perceptron::activation(float input) {
+float perceptron_bias::activation(float input) {
 	(void)input; //remove pedantic warning
 	derivative = 1;
 	return output;
 }
-float pass_perceptron::activation(float input) {
+float perceptron_pass::activation(float input) {
 	output = input;
 	derivative = 1; //do/dz = 1
 	return output;
@@ -79,7 +132,7 @@ void perceptron::train(const hyperparams& params, std::vector<float> input) {
 		delta_weights.at(weight_index) = delta_weight;
 	}
 }
-void select_perceptron::train(const hyperparams& params, std::vector<float> input) {
+void perceptron_select::train(const hyperparams& params, std::vector<float> input) {
 	for (size_t weight_index = 0; weight_index < weights.size(); weight_index++) {
 		if (selection_vector.at(weight_index) == false) continue; //skip training
 		float delta_weight = calc_dw(params, error_contribution,
@@ -88,9 +141,9 @@ void select_perceptron::train(const hyperparams& params, std::vector<float> inpu
 		delta_weights.at(weight_index) = delta_weight;
 	}
 }
-void bias_perceptron::train(const hyperparams& params, std::vector<float> input) {
+void perceptron_bias::train(const hyperparams& params, std::vector<float> input) {
 	(void) input; //removes pedantic warning of unused variable
-	//change in output is the 
+	//TODO could get rid of delta_output & use the delta_weights vector...
 	delta_output = calc_dw(params, error_contribution, 1.0f, delta_output);
 	output += delta_output;
 }

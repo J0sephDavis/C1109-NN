@@ -74,9 +74,8 @@ static inline float calc_dw(const hyperparams& params, float err_contrib,
 class perceptron {
 	public:
 		//TODO include output_lenght for fan_avg calc
-		perceptron(size_t input_length,
-				weight_initializer weight_t,
-				distribution_type dist_t);
+		perceptron(const weightParams& w_params, size_t input_length,
+			size_t output_len);
 		type _type = logistic;
 	//forward pass
 		//compute sum_i (w_ij * o_ij) - called during a forward pass
@@ -101,33 +100,48 @@ class perceptron {
 
 class perceptron_htan : public perceptron {
 public:
-	perceptron_htan(int, bool rand_weights = true);
+	perceptron_htan(const weightParams& w_params,size_t input_length,
+			size_t output_len);
 	virtual float activation(float net_input) override;
 };
 
-class bias_perceptron : public perceptron {
+class perceptron_bias : public perceptron {
 public:
-	bias_perceptron();
+	perceptron_bias();
 	float activation(float net_input) override;
 	void train(const hyperparams& params, std::vector<float> input) override;
 private:
 	float delta_output = 0.0f;
 };
 
-class pass_perceptron : public perceptron {
+class perceptron_pass : public perceptron {
 public:
-	pass_perceptron(size_t net_input_width);
+	perceptron_pass(size_t net_input_width);
 	//activation function f(z) = z
 	float activation(float net_input) override;
 };
 
 // prevents training of unselected weights
-class select_perceptron : public pass_perceptron {
+class perceptron_select : public perceptron_pass {
 public:
-	select_perceptron(size_t net_input_width, std::vector<bool> selection_vector);
+	perceptron_select(size_t net_input_width, std::vector<bool> selection_vector);
 	std::vector<bool> selection_vector;
 	//only train the selected inputs weights
 	void train(const hyperparams& params, std::vector<float> input) override;
 };
+
+//returns a shared ptr to the constructed neuron
+std::shared_ptr<perceptron> neuron_factory(
+		const type neuron_t,
+		const weight_initializer weight_t,
+		const distribution_type dist_t,
+		const size_t argument0, //used in selector
+		const size_t fan_in, const size_t fan_out=0);
+//returns a shared ptr to the constructed neuron
+std::shared_ptr<perceptron> neuron_factory(
+		const type neuron_t,
+		const weightParams weight_p,
+		const size_t argument0, //used in selector
+		const size_t fan_in, const size_t fan_out=0);
 }
 #endif
