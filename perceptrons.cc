@@ -94,8 +94,9 @@ void bias_perceptron::train(const hyperparams& params, std::vector<float> input)
 	delta_output = calc_dw(params, error_contribution, 1.0f, delta_output);
 	output += delta_output;
 }
-std::vector<float> weight_distribution(weight_initializer winit_t,
-		distribution_type dist_t, size_t fan_in, size_t fan_out = 0) {
+std::vector<float> weight_distribution(const weightParams& params,
+		//mixing references and pointers will bite me the ass one of these days
+		size_t fan_in, size_t fan_out) {
 	std::vector<float> weights;
 	std::random_device rand_device;
 	std::mt19937 random_engine(rand_device());
@@ -103,7 +104,11 @@ std::vector<float> weight_distribution(weight_initializer winit_t,
 	float variance, mean, r;
 	size_t fan_avg = (fan_in+fan_out)/2;
 
-	switch(winit_t) {
+	switch(params.winit_t) {
+		case(skip_weights):
+			//this code should never be reached because skip_weights is handled
+			//in percetron::perceptron(...)
+			return {};
 		case(random_default):
 			//TODO understand how random_engine works. should be PRNG?
 			for (size_t i = 0; i < fan_in; i++)
@@ -126,7 +131,7 @@ std::vector<float> weight_distribution(weight_initializer winit_t,
 			r = sqrt(3.0f/fan_in);
 			break;
 	}
-	switch(dist_t) {
+	switch(params.dist_t) {
 		case(uniform):
 			{
 			std::uniform_real_distribution<> dist(-r,r);
