@@ -31,14 +31,14 @@ typedef struct sheet_description {
 	const std::string fields = "learning rate,momentum,threshold,type";
 	std::vector<csv_cell> cells;
 	sheet_description(float learning_rate, float momentum, float threshold,
-			perceptron_type type) {
+			neurons::type type) {
 		cells.emplace_back(learning_rate);
 		cells.emplace_back(momentum);
 		cells.emplace_back(threshold);
 		cells.emplace_back((int)type);
 	}
 } sheet_description;
-
+namespace n=neurons;
 int main(void) {
 	//preparations
 	data_file training_set(4,3,"/mnt/tmpfs/iris.csv");
@@ -49,18 +49,18 @@ int main(void) {
 #endif
 	static const std::vector<float> LR {0.25};
 	static const std::vector<float> MOMENTUM {0.1};
-	static const std::vector<perceptron_type> types
-	{logistic, hyperbolic_tangent};
+	static const std::vector<n::type> types
+	{n::logistic};//, n::hyperbolic_tangent};
 
 for (auto& neuron_type : types)
 for (auto& learning_rate : LR)
 for (auto& momentum : MOMENTUM) {
 	std::string neuronType;
 	switch(neuron_type) {
-		case(logistic):
+		case(n::logistic):
 			neuronType = "LOG";
 			break;
-		case(hyperbolic_tangent):
+		case(n::hyperbolic_tangent):
 			neuronType = "TAN";
 			break;
 		default:
@@ -72,7 +72,7 @@ for (auto& momentum : MOMENTUM) {
 #else
 	std::srand(std::time(NULL));
 #endif
-	hyperparams parameters(learning_rate, momentum);
+	n::hyperparams parameters(learning_rate, momentum);
 	network n(parameters, neuron_type, std::cref(training_set), width,depth); //the network
 	std::vector<std::vector<float>> results = {};
 	sheet_description parameterDATA(learning_rate, momentum, THRESHOLD,
@@ -86,7 +86,7 @@ for (auto& momentum : MOMENTUM) {
 		<< ".csv";
 	std::cout << "FILENAME: " << fileName.str() << "\n";
 	std::vector<std::string> headers = {
-		sheet_description(0,0,0,(perceptron_type)0).fields,
+		sheet_description(0,0,0,(neurons::type)0).fields,
 		era_description({0.0,0.0,0.0,0.0}).fields,
 //		n.weight_header(),
 	};
