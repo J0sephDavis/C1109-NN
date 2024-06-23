@@ -5,7 +5,9 @@
 #include <vector>
 #include <cmath>
 #include <random>
+#include <iostream>
 namespace neurons {
+//the activation function or neuron type
 enum type {
 	logistic,
 	bias,
@@ -13,7 +15,10 @@ enum type {
 	hyperbolic_tangent,
 	selection_pass
 };
+//The initialization method for generating a weight distribution
 enum weight_initializer {
+	//do not use the weight initializer. weights will be{1,...} or {}
+	skip_weights,
 	//random_default: std::rand()
 	random_default, 
 	//Glorot/Xavier: NORMAL distribution, Variance=1/fan_avg, mean=0
@@ -27,13 +32,23 @@ enum weight_initializer {
 	//Good for ReLU & variants
 	he,
 };
+//the distribution to use for the weight initializer
 enum distribution_type {
 	uniform,
 	normal
 };
+//the parameters for generating a weight distribution
+typedef struct weightParams {
+	weightParams(weight_initializer winit_t, distribution_type dist_t) {
+		this->winit_t = winit_t;
+		this->dist_t = dist_t;
+	}
+	weight_initializer winit_t;
+	distribution_type dist_t;
+} weightParams;
 //creates a weight distribution using the initializer method & distribution type
-std::vector<float> weight_distribution(weight_initializer winit_t,
-		distribution_type dist_t, size_t fan_in, size_t fan_out);
+std::vector<float> weight_distribution(const weightParams& params,
+		size_t fan_in, size_t fan_out);
 
 //The hyperparmeters that define the training behavior
 typedef struct hyperparams {
