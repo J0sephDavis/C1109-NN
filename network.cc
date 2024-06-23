@@ -1,6 +1,6 @@
 #include "network.hh"
 #include "dataset.hh"
-network::network(const hyperparams params, perceptron_type neuron_t,
+network::network(const neurons::hyperparams params, neurons::type neuron_t,
 	const data_file& df,
 	size_t _width, size_t _depth)
 : params(std::move(params)) {
@@ -10,15 +10,18 @@ network::network(const hyperparams params, perceptron_type neuron_t,
 	//generate
 	layers.emplace_back(std::make_shared<input_layer>(df.instance_len, BIAS_NEURONS));
 	for (size_t i = 1; i < depth - 1; i++) {
-		layers.emplace_back(
-			std::make_shared<layer>(width, layers[i-1]->width, BIAS_NEURONS,neuron_t));
+		layers.emplace_back(std::make_shared<layer>(width, layers[i-1]->width, BIAS_NEURONS,
+			neuron_t,neurons::weightParams(neurons::le_cun,neurons::normal)));
 	}
 	 //single output node
-	layers.emplace_back(std::make_shared<output_layer>(df.label_len, layers[depth-2]->width, neuron_t));
+	layers.emplace_back(
+		std::make_shared<output_layer>(df.label_len, layers[depth-2]->width, neuron_t,
+			neurons::weightParams(neurons::le_cun, neurons::normal)));
 	//get some testing data
-	std::random_device rand_device; //std::random_device is a uniformly-distributed integer random number generator that produces non-deterministic random numbers. 
-	std::mt19937 random_engine(rand_device());
-	std::uniform_int_distribution<size_t> dist(0,df.data.size()-1);
+	std::random_device rand_device; //non-deterministic
+	std::mt19937 random_engine(rand_device()); //PRNG
+	//TODO evaluate using rand() instead of a distribution
+	std::uniform_int_distribution<size_t> dist(0,df.data.size()-1); 
 
 	//index of testing data
 	const auto TEST_SIZE = df.data.size() * TESTING_RATIO;
@@ -75,7 +78,6 @@ void network::train_on_instance(size_t instance_id) {
 		std::shared_ptr<layer> upper_layer = NULL;
 		if (layer_index+1 < layers.size()) {
 			upper_layer = layers.at(layer_index+1);
-
 		}
 		//update the error contribution
 		layers.at(layer_index)->update_err_contrib(
@@ -117,40 +119,4 @@ std::vector<float> network::benchmark() {
 		results.push_back(std::move(average));
 	}
 	return std::move(results);
-}
-std::string network::weight_header() const {
-	std::stringstream out;
-	for (size_t lid = 0; lid < layers.size(); lid++) {
-		const auto& neurons = layers.at(lid)->neurons;
-		for (size_t nid = 0; nid < neurons.size();nid++) {
-			const auto& neuron = neurons.at(nid);
-			if (neuron->type == bias) {
-				out << "L" << lid << "N" << nid << "B" << neuron->output << ",";
-			}
-			else {
-				const auto& weights = neuron->weights;
-				for (size_t wid = 0; wid < weights.size(); wid++) {
-					out << "L" << lid << "N" << nid << "W" << wid << ",";
-				}
-			}
-		}
-	}
-	return out.str();
-}
-std::vector<csv_cell> network::weights() {
-	std::vector<csv_cell> rv = {};
-	for (const auto& layer : layers) {
-		for (const auto& neuron : layer->neurons) {
-			switch(neuron->type) {
-				case(bias):
-					rv.push_back(neuron->output);
-					break;
-				default:
-					rv.insert(rv.end(),
-						neuron->weights.begin(),
-						neuron->weights.end());
-			}
-		}
-	}
-	return std::move(rv);
 }
