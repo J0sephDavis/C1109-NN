@@ -11,9 +11,6 @@ std::shared_ptr<perceptron>neuron_factory(const type neuron_t, const weightParam
 		const size_t argument0,	const size_t fan_in, const size_t fan_out) {
 	std::shared_ptr<perceptron> neuron;
 	switch (neuron_t) {
-		default:
-			std::cerr << "NEURON_FACTORY USED DEFAULT.\n";
-			[[fallthrough]];
 		case(logistic):
 			neuron = std::make_shared<perceptron>
 				(perceptron(std::move(weight_p), fan_in, fan_out));
