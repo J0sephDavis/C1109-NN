@@ -12,9 +12,9 @@ network::network(const neurons::hyperparams params, neurons::type neuron_t,
 		layers.emplace_back(std::make_shared<layer>(width, layers[i-1]->width, BIAS_NEURONS,
 			neuron_t,neurons::weightParams(neurons::he,neurons::normal)));
 	}
-	 //single output node
+	//output layer
 	layers.emplace_back(
-		std::make_shared<output_layer>(df.label_len, layers[depth-2]->width, neuron_t,
+		std::make_shared<output_layer>(df.label_len, layers[depth-2]->width, neurons::logistic,
 			neurons::weightParams(neurons::le_cun, neurons::normal)));
 	//get some testing data
 	std::random_device rand_device; //non-deterministic
