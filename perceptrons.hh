@@ -1,5 +1,6 @@
 #ifndef PERCEPTRON_HEADER_HH
 #define PERCEPTRON_HEADER_HH
+#include "definitions.hh"
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,7 +14,8 @@ enum type {
 	bias,
 	passthrough,
 	hyperbolic_tangent,
-	selection_pass
+	selection_pass,
+	ReLU
 };
 //The initialization method for generating a weight distribution
 enum weight_initializer {
@@ -62,13 +64,19 @@ typedef struct hyperparams {
 
 //the weight change formula to be used during training
 static inline float calc_dw(const hyperparams& params, float err_contrib,
+		float input, float previous_dw) {
 	//DELTA RULE - the change in weight (from neuron u_i to u_j) is
 	//  equal to learning rate, multiplied by
 	//  error contribution (d_pj) then multiplied by the output of
 	//  neuron-i (u_i)
-		float input, float previous_dw) {
-	return (params.learning_rate * err_contrib * input)
+	float delta_weight = (params.learning_rate * err_contrib * input)
 		+ (params.momentum * previous_dw);
+#ifdef PRINT_TRAINING_DATA
+	std::cout << "\t" << delta_weight;
+	if (delta_weight == 0)
+		std::cout << "(" << err_contrib << "," << input << ")";
+#endif
+	return delta_weight;
 }
 //
 class perceptron {
@@ -96,6 +104,13 @@ class perceptron {
 		float derivative = 0.0f;
 		//changes in weights during the previous training session
 		std::vector<float> delta_weights;
+};
+
+class perceptron_ReLU : public perceptron {
+public:
+	perceptron_ReLU(const weightParams& w_params,size_t input_length,
+			size_t output_len);
+	virtual float activation(float net_input) override;
 };
 
 class perceptron_htan : public perceptron {
