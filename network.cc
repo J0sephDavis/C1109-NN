@@ -58,9 +58,11 @@ void network::train() {
 	std::random_device rand_device; 
 	std::mt19937 random_engine(rand_device());
 	std::uniform_int_distribution<size_t> dist(0,trainingData.size()-1);
-const float training_ratio = 0.6f;	
+	const float training_ratio = 0.6f;	
 	for (size_t i = 0; i < trainingData.size()*training_ratio; i++) {
-//		train_on_instance(i);
+#ifdef PRINT_TRAINING_DATA
+		std::cout << "---------------------------------------------------------\n\n";
+#endif
 		train_on_instance(dist(rand_device));
 	}
 }
@@ -73,19 +75,25 @@ void network::train_on_instance(size_t instance_id) {
 	output_data.insert(output_data.begin(), trainingData.at(instance_id)->data);
 	//Backpropagate
 	//1. err contribution
-	for (size_t layer_index = layers.size()-1; layer_index != 0; layer_index--) {
+	for (size_t layer_index = layers.size(); layer_index != 0; layer_index--) {
 		std::shared_ptr<layer> upper_layer = NULL;
-		if (layer_index+1 < layers.size()) {
-			upper_layer = layers.at(layer_index+1);
+		if (layer_index < layers.size()) {
+			upper_layer = layers.at(layer_index);
 		}
 		//update the error contribution
-		layers.at(layer_index)->update_err_contrib(
+#ifdef PRINT_ERR_CONTRIBUTION
+		std::cout << "Layer " << layer_index << "==========\n";
+#endif
+		layers.at(layer_index-1)->update_err_contrib(
 				std::cref(trainingData.at(instance_id)->label), upper_layer);
 	}
 	//2. gradient descent
-	for (size_t layer_index = layers.size()-1; layer_index !=0; layer_index--) {
-		layers.at(layer_index)->train(
-				std::cref(output_data.at(layer_index)),
+	for (size_t layer_index = layers.size(); layer_index !=0; layer_index--) {
+#ifdef PRINT_TRAINING_DATA
+		std::cout << "Layer " << layer_index << "==========\n";
+#endif
+		layers.at(layer_index-1)->train(
+				std::cref(output_data.at(layer_index-1)),
 				std::cref(params));
 	}
 }
