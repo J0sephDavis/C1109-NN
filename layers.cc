@@ -1,5 +1,4 @@
 #include "layers.hh"
-#include "perceptrons.hh"
 //INITIALIZE
 layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 		neurons::type type, neurons::weightParams weight_p) {
@@ -16,7 +15,9 @@ layer::layer(size_t _width, size_t _input_width, size_t _bias_neurons,
 	}
 	//Then, initialize neurons of the layer type
 	for (; neuron_index < width; neuron_index++) {
-		neurons.emplace_back(neurons::neuron_factory(type,weight_p,0,this->input_width));
+		//for the selection vector
+		int arg0 = neuron_index - bias_neurons;
+		neurons.emplace_back(neurons::neuron_factory(type,weight_p,arg0,this->input_width));
 	}
 };
 output_layer::output_layer(int width, int input_width, neurons::type type, neurons::weightParams weight_p)
@@ -47,16 +48,23 @@ std::vector<float> input_layer::output(std::vector<float> input) {
 }
 //ERROR_CONTRIBUTION
 float layer::get_associated_err(size_t neuron_j) {
-	std::cout << "ASSOCIATED ERR";
-	std::cout << "n.sze()" << neurons.size() << "\n";
 	float associated_error = 0;
 	//For all neurons, this upper layer, that are not bias neurons
-	
+#ifdef PRINT_ERR_CONTRIBUTION
+	std::cout << "get_associated(" << neuron_j << "):";
+#endif
 	for (size_t k = bias_neurons; k < neurons.size(); k++) {
 		const auto& u_k = neurons.at(k);
+#ifdef PRINT_ERR_CONTRIBUTION
+		std::cout << "(" << u_k->error_contribution << "*"
+			<< u_k->weights[neuron_j] << ") + ";
+#endif
 		associated_error +=
 			u_k->error_contribution * u_k->weights.at(neuron_j);
 	}
+#ifdef PRINT_ERR_CONTRIBUTION
+	std::cout << "= " << associated_error << "\n";
+#endif
 	return associated_error;
 }
 /* update_err_contrib
@@ -73,6 +81,16 @@ void layer::update_err_contrib(std::vector<float> label,
 		neuron->error_contribution
 			= upper_layer->get_associated_err(u_j)
 			* neuron->derivative; //d_pk
+#ifdef PRINT_ERR_CONTRIBUTION
+		if (neuron->error_contribution == 0) {
+			auto associated = upper_layer->get_associated_err(u_j);
+			if (associated == 0) continue;
+			auto deriv = neuron->derivative;
+			std::cout << "[" << u_j << "](" << associated << "," << deriv<< ")\n";
+		}
+		else
+			std::cout << "[" << u_j << "]: " << neuron->error_contribution << "\n";
+#endif
 	}
 }
 void output_layer::update_err_contrib(std::vector<float> label,
@@ -83,6 +101,9 @@ void output_layer::update_err_contrib(std::vector<float> label,
 		//t_pj - target output
 		//o_pj - actual output (in this case of the output node)
 		float err_str = label.at(j) - neuron->output; //t-o
+#ifdef PRINT_ERR_CONTRIBUTION
+		std::cout << "output_err_" << j << ": " << err_str << "\n";
+#endif
 		//d_pj = (t_pj - o_pj) * f'(z_pj)
 		neuron->error_contribution = err_str * neuron->derivative;
 	}
@@ -90,14 +111,27 @@ void output_layer::update_err_contrib(std::vector<float> label,
 //TRAIN
 /* Calls the perceptrons training function of each neuron. */
 void layer::train(std::vector<float> input, const neurons::hyperparams& params) {
+	auto x = 0;
 	for (auto& neuron : neurons) {
+#ifdef PRINT_TRAINING_DATA
+		std::cout << "N_" << x++;
 		neuron->train(params, (input));
+		std::cout << "\n";
+#else
+		neuron->train(params, (input));
+#endif
 	}
 }
 void output_layer::train(std::vector<float> input, const neurons::hyperparams& params) {
 	//get error contribution of output nodes
-	for (size_t j = 0; j < neurons.size(); j++) {
-		const auto& neuron = neurons.at(j);
+	auto x = 0;
+	for (auto& neuron : neurons) {
+#ifdef PRINT_TRAINING_DATA
+		std::cout << "O_" << x++;
 		neuron->train(params, input);
+		std::cout << "\n";
+#else
+		neuron->train(params, input);
+#endif
 	}
 }
