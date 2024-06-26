@@ -1,11 +1,14 @@
 #ifndef NN_DEFINITIONS
 #define NN_DEFINITIONS
 
-#define MAX_ERAS 500
+#define MAX_ERAS 3
 #define EPOCHS 1
 #define THRESHOLD 0.2f
-#define SEED_VAL 9350
+//#define SEED_VAL 9350
 #define BIAS_NEURONS 1
 #define TESTING_RATIO 0.3f
-
+//#define PRINT_TRAINING_DATA
+#define PRINT_ERR_CONTRIBUTION
+//#define PRINT_ACTIVATION
+//#define PRINT_W_INIT
 #endif
