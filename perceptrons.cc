@@ -3,9 +3,9 @@ namespace neurons {
 std::shared_ptr<perceptron>neuron_factory(const type neuron_t,
 		const weight_initializer weight_t, const distribution_type dist_t,
 		const size_t arugment0, const size_t fan_in, const size_t fan_out) {
-	return neuron_factory(neuron_t,
+	return std::move(neuron_factory(neuron_t,
 			std::move(weightParams(std::move(weight_t),std::move(dist_t))),
-			arugment0, fan_in, fan_out);
+			arugment0, fan_in, fan_out));
 }
 std::shared_ptr<perceptron>neuron_factory(const type neuron_t, const weightParams weight_p,
 		const size_t argument0,	const size_t fan_in, const size_t fan_out) {
@@ -15,25 +15,30 @@ std::shared_ptr<perceptron>neuron_factory(const type neuron_t, const weightParam
 			neuron = std::make_shared<perceptron>
 				(perceptron(std::move(weight_p), fan_in, fan_out));
 			break;
+		case(ReLU):
+			neuron = std::make_shared<perceptron_ReLU>
+				(std::move(weight_p), fan_in,fan_out);
+			break;
 		case(bias):
-			neuron = std::make_shared<perceptron>(perceptron_bias());
+			neuron = std::make_shared<perceptron_bias>();
 			break;
 		case(passthrough):
-			neuron = std::make_shared<perceptron>
-				(perceptron_pass(fan_in));
+			neuron = std::make_shared<perceptron_pass>(fan_in);
 			break;
 		case(hyperbolic_tangent):
-			neuron = std::make_shared<perceptron>
-				(perceptron_htan(std::move(weight_p), fan_in, fan_out));
+			neuron = std::make_shared<perceptron_htan>
+				(std::move(weight_p), fan_in, fan_out);
 			break;
 		case(selection_pass):
-			std::vector<bool> selector(fan_in);
+			std::vector<bool> selector = {};
 			for (size_t i = 0; i < fan_in; i++) {
 				if (i == argument0) selector.push_back(true);
 				else selector.push_back(false);
 			}
-			neuron = std::make_shared<perceptron>
-				(perceptron_select(fan_in, std::move(selector)));
+			neuron = std::make_shared<perceptron_select>
+				(fan_in, std::move(selector));
+			break;
+	}
 			break;
 	}
 	return std::move(neuron);
