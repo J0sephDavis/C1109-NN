@@ -39,8 +39,33 @@ std::shared_ptr<perceptron>neuron_factory(const type neuron_t, const weightParam
 				(fan_in, std::move(selector));
 			break;
 	}
+#ifdef PRINT_W_INIT
+	bool print_it = true;
+	switch(neuron_t) {
+		case(logistic):
+			std::cout << "L:";
+			break;
+		case(ReLU):
+			std::cout << "R:";
+			break;
+		case(selection_pass):
+			std::cout << "S:";
+			break;
+		default:
+			print_it = false;
 			break;
 	}
+	if (print_it) {
+		float average_weight = 0.0f;
+		for (const auto& w : neuron->weights) {
+			std::cout << w << ", ";
+			average_weight +=w;
+		}
+		average_weight/=neuron->weights.size();
+		std::cout << "\tavg w:" <<average_weight;
+		std::cout << "\n";
+	}
+#endif
 	return std::move(neuron);
 }
 //INITIALIZE
@@ -91,6 +116,11 @@ perceptron_select::perceptron_select(size_t net_input_width, std::vector<bool> s
 	perceptron_pass(net_input_width),
 	selection_vector(std::move(selection_vector)) {
 		_type = selection_pass;
+		std::cout << "selection_vector: [";
+		for (const auto& v : this->selection_vector) {
+			std::cout << v << ",";
+		}
+		std::cout << "]\n";
 		//This doesn't need to be done. Added for when viewing the weight dump later
 		for (size_t i = 0; i < selection_vector.size(); i++) {
 			weights.at(i) = selection_vector.at(i);
@@ -111,6 +141,25 @@ float perceptron::activation(float input) {
 	output = 1/(1+exp(-input)); //possible underflow
 	//f'(x) = f(x)(1-f(x);
 	derivative = output * (1 - output);
+#ifdef PRINT_ACTIVATION
+	if (derivative == 0) std::cout << "LOG DEAD(" << input << ")\n";
+#endif
+	return output;
+}
+float perceptron_ReLU::activation(float input) {
+	if (input > 0) {
+		output = input;
+		derivative = 1;
+	}
+	else {	
+		output = 0;
+		derivative = 0; //DEAD
+	}
+#ifdef PRINT_ACTIVATION
+	if (derivative == 0) {
+		std::cout << "ReLU DEAD(" << input << ")\n";
+	}
+#endif
 	return output;
 }
 float perceptron_htan::activation(float input) {
@@ -118,6 +167,9 @@ float perceptron_htan::activation(float input) {
 	output = tanh(input);//(2/(1+exp(-2*input)))-1;
 	derivative = cosh(input);
 	derivative = 1/(derivative * derivative);
+#ifdef PRINT_ACTIVATION
+	if (derivative == 0) std::cout << "HTAN DEAD(" << input << ")\n";
+#endif
 	return output;
 }
 float perceptron_bias::activation(float input) {
@@ -133,6 +185,9 @@ float perceptron_pass::activation(float input) {
 //TRAIN
 //given an array of inputs, determines the weight changes needed
 void perceptron::train(const hyperparams& params, std::vector<float> input) {
+#ifdef PRINT_TRAINING_DATA
+	std::cout << "train():";
+#endif
 	for (size_t weight_index = 0; weight_index < weights.size(); weight_index++) {
 		float delta_weight = calc_dw(params, error_contribution,
 			input[weight_index], delta_weights[weight_index]);
@@ -141,6 +196,9 @@ void perceptron::train(const hyperparams& params, std::vector<float> input) {
 	}
 }
 void perceptron_select::train(const hyperparams& params, std::vector<float> input) {
+#ifdef PRINT_TRAINING_DATA
+	std::cout << "select():";
+#endif
 	for (size_t weight_index = 0; weight_index < weights.size(); weight_index++) {
 		if (selection_vector.at(weight_index) == false) continue; //skip training
 		float delta_weight = calc_dw(params, error_contribution,
@@ -150,6 +208,9 @@ void perceptron_select::train(const hyperparams& params, std::vector<float> inpu
 	}
 }
 void perceptron_bias::train(const hyperparams& params, std::vector<float> input) {
+#ifdef PRINT_TRAINING_DATA
+	std::cout << "bias():";
+#endif
 	(void) input; //removes pedantic warning of unused variable
 	//TODO could get rid of delta_output & use the delta_weights vector...
 	delta_output = calc_dw(params, error_contribution, 1.0f, delta_output);
