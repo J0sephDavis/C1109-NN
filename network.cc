@@ -10,7 +10,7 @@ network::network(const neurons::hyperparams params, neurons::type neuron_t,
 	layers.emplace_back(std::make_shared<input_layer>(df.instance_len, BIAS_NEURONS));
 	for (size_t i = 1; i < depth - 1; i++) {
 		layers.emplace_back(std::make_shared<layer>(width, layers[i-1]->width, BIAS_NEURONS,
-			neuron_t,neurons::weightParams(neurons::le_cun,neurons::normal)));
+			neuron_t,neurons::weightParams(neurons::he,neurons::normal)));
 	}
 	 //single output node
 	layers.emplace_back(
