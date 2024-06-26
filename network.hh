@@ -4,7 +4,6 @@
 #include "csv_handler.hh"
 #include "dataset.hh"
 #include "layers.hh"
-#include "definitions.hh"
 
 class network {
 public:

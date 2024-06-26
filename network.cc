@@ -1,5 +1,4 @@
 #include "network.hh"
-#include "dataset.hh"
 network::network(const neurons::hyperparams params, neurons::type neuron_t,
 	const data_file& df,
 	size_t _width, size_t _depth)
