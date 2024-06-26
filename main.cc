@@ -63,6 +63,9 @@ for (auto& momentum : MOMENTUM) {
 		case(n::hyperbolic_tangent):
 			neuronType = "TAN";
 			break;
+		case(n::ReLU):
+			neuronType = "ReLU";
+			break;
 		default:
 			neuronType = "UNK";
 			break;
@@ -88,7 +91,6 @@ for (auto& momentum : MOMENTUM) {
 	std::vector<std::string> headers = {
 		sheet_description(0,0,0,(neurons::type)0).fields,
 		era_description({0.0,0.0,0.0,0.0}).fields,
-//		n.weight_header(),
 	};
 	csv_file DATA(std::move(fileName.str()), std::move(headers));
 
@@ -101,16 +103,20 @@ for (auto& momentum : MOMENTUM) {
 		std::vector<csv_cell> cells;
 		std::copy(parameterDATA.cells.begin(), parameterDATA.cells.end(), std::back_insert_iterator(cells));
 		std::copy(eraDATA.cells.begin(), eraDATA.cells.end(), std::back_insert_iterator(cells));
-//		const auto weights = n.weights();
-//		std::copy(weights.begin(), weights.end(), std::back_insert_iterator(cells));
 		DATA.add_row(std::move(cells));
 		//4. Train
 		//Good learners end early
 		if (eraDATA.average < THRESHOLD and eraDATA.max < THRESHOLD)
 			break;
 		for (size_t epoch = 0; epoch < EPOCHS; epoch++) {
-				n.train();
+			n.train();
 		}
+		std::cout << "average:" << eraDATA.average << "\n";
+//control sector
+	//	char x;
+	//	std::cout << " continue?";
+	//	std::cin >> x;
+	//	if (x == 'n') break;
 	}
 }
 	return 0;
