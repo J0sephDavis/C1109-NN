@@ -66,11 +66,17 @@ perceptron::perceptron(const weightParams& w_params, size_t input_len,
 	}
 }
 
+perceptron_ReLU::perceptron_ReLU(const weightParams& w_params,
+		size_t input_len, size_t output_len = 0)
+	: perceptron(std::move(w_params), std::move(input_len), std::move(output_len)) {
+	_type = ReLU;
+}
+
 perceptron_htan::perceptron_htan(const weightParams& w_params,
 		size_t input_len, size_t output_len = 0)
 	: perceptron(std::move(w_params), std::move(input_len), std::move(output_len)) {
 		_type = hyperbolic_tangent;
-	}
+}
 perceptron_bias::perceptron_bias() : perceptron(std::move(weightParams(skip_weights,normal)), 0) {
 		output = 1;
 		derivative = 1;
